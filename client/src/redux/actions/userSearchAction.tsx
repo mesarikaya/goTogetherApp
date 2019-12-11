@@ -31,7 +31,7 @@ export function SearchUsers(event: React.FormEvent<HTMLFormElement> | null,
     // Set data to send with Post request
     const data = formFields;
     const params = new URLSearchParams();
-    const quantity = 9;
+    const quantity = 3;
     params.append('origin', data.origin);
     params.append('destination', data.destination);
     params.append('originRange', data.originRange.toString());
@@ -60,18 +60,30 @@ export function SearchUsers(event: React.FormEvent<HTMLFormElement> | null,
             };
 
             let payload = initialState;
-
             // tslint:disable-next-line:no-console
             console.log("SENDING TO THE USER SEARCH REDUCER", response);
-
             // Depending on response status, allow or not for login
             if (response.status === 200) {
                 // tslint:disable-next-line:no-console
                 console.log("response is", response.data);
                 if(Array.isArray(response.data) && response.data.length){
-                    const newResponseData = response.data;
-                    const prevUsers = [];
+                    const newResponse = response.data;
+                    // Flatten the userlist response
+                    const newResponseData: UserSearchResult[] = [];
+                    for(const key in newResponse){
+                        if (newResponse.hasOwnProperty(key)){
+                            for(const secondKey in newResponse[key]){
+                                if (newResponse.hasOwnProperty(secondKey)){
+                                    newResponseData.push(newResponse[key][secondKey]);
+                                }
+                            }
+                        }
+                    }
+
+                    // tslint:disable-next-line:no-console
+                    console.log("New flattened data for the user", newResponseData);
                     
+                    const prevUsers: UserSearchResult[] = [];
                     for(const key in existingUsers){
                         if (existingUsers.hasOwnProperty(key)){
                             prevUsers.push(existingUsers[key]);

@@ -1,6 +1,5 @@
 package com.mes.gotogether.domains.responses;
 
-import com.mes.gotogether.domains.Address;
 import com.mes.gotogether.domains.Group;
 import java.util.HashSet;
 import java.util.Objects;
@@ -40,14 +39,14 @@ public final class GroupSearchResponse {
                                                                                                                             member.getFirstName() + " " + member.getLastName(), 
                                                                                                                             group.getOwners().contains(member),
                                                                                                                             member.getUserId(),
-                                                                                                                            member.getAddress()))
+                                                                                                                            member.getAddress().toString()))
                                                                                                                   .collect(toCollection(HashSet::new)));
                             this.waitingList = new WaitingList(group.getMembershipRequests().stream()
                                                                                                                                            .map(member -> new User(member.getId(),
                                                                                                                                                     member.getFirstName() + " " + member.getLastName(), 
                                                                                                                                                     group.getOwners().contains(member),
                                                                                                                                                     member.getUserId(),
-                                                                                                                                                    member.getAddress()))
+                                                                                                                                                    member.getAddress().toString()))
                                                                                                                                            .collect(toCollection(HashSet::new)));
 
                             log.info("Created member is: " + this.members);
@@ -87,7 +86,7 @@ public final class GroupSearchResponse {
                                 private final String userName;
                                 private final boolean isOwner;
                                 private final String userId;
-                                private final Address address;
+                                private final String  address;
 	}
 }
 

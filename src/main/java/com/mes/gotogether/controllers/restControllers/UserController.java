@@ -42,7 +42,7 @@ public class UserController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @GetMapping("/users")
+    @GetMapping("/allUsers")
     @ResponseStatus(HttpStatus.OK)
     public Mono<List<User>> getAllUsers(){
         System.out.println();

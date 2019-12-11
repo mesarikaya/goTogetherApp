@@ -99,7 +99,6 @@ class GroupMemberTable extends React.Component<Props,{}>{
     public render(){
 
         const tableRows = this.createTable(this.props.groupInfo.members.users);
-        
         return (
             <React.Fragment>
                 {/* <!- Group Member Overview Card design --> */}
@@ -119,7 +118,7 @@ class GroupMemberTable extends React.Component<Props,{}>{
                                 </tr>
                             </thead>
                             <tbody className="text-center">
-                                    {tableRows}
+                                {tableRows}
                             </tbody> 
                         </Table>
                     </Card.Body>

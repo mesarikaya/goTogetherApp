@@ -61,7 +61,6 @@ class GroupCard extends React.Component<Props & RouteComponentProps < PathProps 
                     </Card.Body>
                 </Card>
                 <br />
-
             </React.Fragment>
         );
     }

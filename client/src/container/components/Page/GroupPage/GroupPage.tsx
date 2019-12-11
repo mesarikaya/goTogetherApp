@@ -32,10 +32,6 @@ import UserTableList from '../../Tables/UserTableList';
 export interface GroupProps{
     groupInfo:GroupSearchResult;
     userSearchFormFields: GroupSearchFormFields;
-    userSearchResults: {
-        users: UserSearchResult[],
-        page: number
-    };
     loginFormFields: LoginFormFields;
     onSubmit: typeof SearchUsers;
 }
@@ -43,14 +39,9 @@ export interface GroupProps{
 export interface GroupState{
     groupInfo: GroupSearchResult;
     userSearchFormFields: GroupSearchFormFields;
-    userSearchResults: {
-        users: UserSearchResult[],
-        page: number
-    };
     storeState: StoreState;
     isUserInGroup: boolean;
     isUserOwnerInGroup: boolean;
-    size: number;
 }
 
 // These props are provided by the router
@@ -99,16 +90,15 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps < PathP
         const groupUser = this.isUserInGroup(selectedGroup.members.users);
         const groupOwner = this.isOwnerInGroup(selectedGroup.members.users);
         // tslint:disable-next-line: no-console
-        console.log("Group page user status:", groupUser, groupOwner);
+        console.log("Group page currentAppState:", currAppState);
 
-        const userResults: {users: UserSearchResult[], page: number} = {
+        /* const userResults: {users: UserSearchResult[], page: number} = {
             users: [],
             page: 0
-        };
+        }; */
 
         this.state = {
             groupInfo: selectedGroup,
-            userSearchResults: userResults,
             userSearchFormFields: {
                 origin: '',
                 originRange: 2,
@@ -117,8 +107,7 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps < PathP
             },
             storeState: currAppState,
             isUserInGroup:groupUser,
-            isUserOwnerInGroup: groupOwner,
-            size: 9
+            isUserOwnerInGroup: groupOwner
         }
 
         this.loadMore = this.loadMore.bind(this);
@@ -127,6 +116,9 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps < PathP
 
     public componentDidUpdate(oldProps: GroupProps& RouteComponentProps < PathProps >) {
         
+        // tslint:disable-next-line: no-console
+        console.log("Inside componentDidUpdate", store.getState());
+
         const newProps = this.props;
         if(oldProps.groupInfo !== newProps.groupInfo) {
             this.setState({ 
@@ -134,12 +126,14 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps < PathP
             });
         }
 
-        if(oldProps.userSearchResults !== newProps.userSearchResults) {
+        const currAppState = store.getState();
+        if(this.state.storeState !== currAppState) {
+            // tslint:disable-next-line: no-console
+            console.log("Inside componentDidUpdate2", store.getState());
             this.setState({ 
-                userSearchResults:this.props.userSearchResults 
+                storeState: currAppState
             });
         }
-
     }
 
     public isUserInGroup(data:GroupUser[]) {
@@ -155,8 +149,8 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps < PathP
     public loadMore = async (event: any): Promise<void> => {     
         this.props.onSubmit(null, 
                             this.state.userSearchFormFields, 
-                            this.state.userSearchResults.users,
-                            this.state.userSearchResults.page,
+                            this.state.storeState.userSearchResults.users,
+                            this.state.storeState.userSearchResults.page,
                             this.state.storeState.system.token);
     }
 
@@ -168,7 +162,7 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps < PathP
 
     public render() {
         
-        const userSearchResult = this.state.userSearchResults.users;
+        const userSearchResult = this.state.storeState.userSearchResults.users;
         return (
             <div className="GroupPage">
                 <NavigationBar loginFormFields={this.props.loginFormFields} />
@@ -198,21 +192,25 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps < PathP
                 </div>
                 <div className="container mx-auto my-auto align-items-center">
                     <div className="row justify-content-center">
-                        <GroupSearchForm 
-                            formFields={this.state.userSearchFormFields}
-                            page={this.state.userSearchResults.page}
-                            token={this.state.storeState.system.token} 
-                            updateSearchFormFields={this.handleUserSearchFormUpdate}
-                            onSubmit={this.props.onSubmit}
-                        />
+                        <div className="searchForm">                                  
+                            <h1 className="joinAGroupText text-center">Find a member?</h1>
+                            <p className="joinAGroupSubText text-center">Search with ease based on the origin and destination radius</p>
+                            <GroupSearchForm 
+                                formFields={this.state.userSearchFormFields}
+                                page={this.state.storeState.userSearchResults.page}
+                                token={this.state.storeState.system.token} 
+                                updateSearchFormFields={this.handleUserSearchFormUpdate}
+                                onSubmit={this.props.onSubmit}
+                            />
+                        </div>
                     </div>
                 </div>
 
                 <div className="container mx-auto my-auto">                       
                     {Object.keys(userSearchResult).length>0 ? (
                     <div>
-                        <UserTableList userList={this.state.userSearchResults.users} />
-                       {this.state.userSearchResults.page !== 0 ? 
+                        <UserTableList userList={this.state.storeState.userSearchResults.users} />
+                       {this.state.storeState.userSearchResults.page !== 0 ? 
                             <Button type="button" onClick={this.loadMore}> Load More... </Button>: null
                        }
                     </div>): null

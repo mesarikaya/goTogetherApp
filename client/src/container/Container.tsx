@@ -12,6 +12,7 @@ import GroupPage from './components/Page/GroupPage/GroupPage';
 import {store} from "../redux/store";
 import { SecurityState } from '../redux/types/system/securityState';
 import { GroupSearchResult } from 'src/redux/types/userInterface/groupSearchResult';
+import { UserSearchResult } from 'src/redux/types/userInterface/userSearchResult';
 
 
 
@@ -20,6 +21,10 @@ interface AppProps {
     system: SecurityState,
     groupSearchResults: {
         groups: GroupSearchResult[],
+        page: number
+    };
+    userSearchResults: {
+        users: UserSearchResult[],
         page: number
     };
 }
@@ -37,6 +42,10 @@ export interface State {
         groups: GroupSearchResult[],
         page: number
     };
+    userSearchResults: {
+        users: UserSearchResult[],
+        page: number
+    };
 };
 
 class Container extends React.Component<AppProps & RouteComponentProps<PathProps>, State> {
@@ -52,14 +61,16 @@ class Container extends React.Component<AppProps & RouteComponentProps<PathProps
 
         this.state = {
             system: currentState.system,
-            groupSearchResults: currentState.groupSearchResults
+            groupSearchResults: currentState.groupSearchResults,
+            userSearchResults: currentState.userSearchResults
         };
     }
 
     public componentDidUpdate(oldProps: AppProps) {
         
         const newProps = this.props;
-        if(oldProps.system !== newProps.system && oldProps.groupSearchResults !== newProps.groupSearchResults) {
+        if(oldProps.system !== newProps.system 
+            && oldProps.groupSearchResults !== newProps.groupSearchResults) {
             this.setState({ 
                 system:this.props.system,
                 groupSearchResults:this.props.groupSearchResults 
@@ -68,6 +79,10 @@ class Container extends React.Component<AppProps & RouteComponentProps<PathProps
             this.setState({ system:this.props.system });
         } else if(oldProps.groupSearchResults !== newProps.groupSearchResults) {
             this.setState({ groupSearchResults:this.props.groupSearchResults });
+        }
+
+        if(oldProps.userSearchResults !== newProps.userSearchResults) {
+            this.setState({ userSearchResults:this.props.userSearchResults });
         }
     }
 
@@ -88,7 +103,8 @@ const mapStateToProps = (
     OwnProps: AppProps & RouteComponentProps<PathProps>
     ) => ({
     system: state.system,
-    groupSearchResults: state.groupSearchResults
+    groupSearchResults: state.groupSearchResults,
+    userSearchResults: state.userSearchResults
 })  
 
 export default withRouter(connect(mapStateToProps, null)(Container));

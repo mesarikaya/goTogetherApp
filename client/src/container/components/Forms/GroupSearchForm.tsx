@@ -140,82 +140,75 @@ class GroupSearchForm extends React.Component<Props, State> {
         const validated = this.state.validated;
         return (
           <React.Fragment>
-
-            <div className="searchForm">
-                                                
-                <h1 className="joinAGroupText text-center">Join<span> a group</span>?</h1>
-                <p className="joinAGroupSubText text-center">Search with ease based on the origin and destination radius</p>
+            <Form name="groupSearchForm" className="groupSearchFormValidation text-center" 
+            noValidate={true} validated = {validated} onSubmit = {this.handleSubmit}>
+                <Form.Row> 
+                    <InputGroup className="justify-content-center">
+                        {/* <!- Origin Input Group --> */}
+                        <Form.Group className="originInputFormGroup">
+                            {/* <!- Origin Input text --> */}
+                            <Form.Label className="originLabel" >
+                                <strong>Origin</strong>
+                            </Form.Label>
+                            <Form.Control 
+                                type="input"
+                                id={"origin"}
+                                name={"origin"}
+                                placeholder="Address/zip code" 
+                                required={true}
+                                onChange={this.handleChange}
+                            />
+                        </Form.Group>
+                        {/* <!- Origin Input Range Group --> */}
+                        <Form.Group controlId="originAdressRangeControl">
+                            {/* <!- Origin Range --> */}
+                            <FormLabel className="originRangeDropdownLabel">
+                                <strong>Range</strong>
+                            </FormLabel>
+                            <InputRange 
+                                name={"originRange"}
+                                value={this.props.formFields.originRange}
+                                onChangeValue={this.handleInputRangeChange}
+                                onIncrease={this.increase}
+                                onDecrease={this.decrease}
+                            />
+                        </Form.Group>
+                    </InputGroup>
                 
-                <Form name="groupSearchForm" className="groupSearchFormValidation text-center" 
-                noValidate={true} validated = {validated} onSubmit = {this.handleSubmit}>
-                    <Form.Row> 
-                        <InputGroup className="justify-content-center">
-                            {/* <!- Origin Input Group --> */}
-                            <Form.Group className="originInputFormGroup">
-                                {/* <!- Origin Input text --> */}
-                                <Form.Label className="originLabel" >
-                                    <strong>Origin</strong>
-                                </Form.Label>
-                                <Form.Control 
-                                    type="input"
-                                    id={"origin"}
-                                    name={"origin"}
-                                    placeholder="Address/zip code" 
-                                    required={true}
-                                    onChange={this.handleChange}
-                                />
-                            </Form.Group>
-                            {/* <!- Origin Input Range Group --> */}
-                            <Form.Group controlId="originAdressRangeControl">
-                                {/* <!- Origin Range --> */}
-                                <FormLabel className="originRangeDropdownLabel">
-                                    <strong>Range</strong>
-                                </FormLabel>
-                                <InputRange 
-                                    name={"originRange"}
-                                    value={this.props.formFields.originRange}
-                                    onChangeValue={this.handleInputRangeChange}
-                                    onIncrease={this.increase}
-                                    onDecrease={this.decrease}
-                                />
-                            </Form.Group>
-                        </InputGroup>
-                    
-                        <InputGroup className="justify-content-center">
-                            {/* <!- Destination Input Group --> */}
-                            <Form.Group className="destinationInputFormGroup">
-                                {/* <!- Destination Input text --> */}
-                                <Form.Label className="destinationLabel">
-                                    <strong>Destination</strong>
-                                </Form.Label>
-                                <Form.Control 
-                                    type="input"
-                                    id={"destination"}
-                                    name={"destination"}
-                                    placeholder="Address/zip code" 
-                                    required={true}
-                                    onChange={this.handleChange}
-                                />
-                            </Form.Group>
-                            {/* <!- Destination Input Range Group --> */}
-                            <Form.Group controlId="destinationAdressRangeControl">
-                                {/* <!- Destination Range --> */}
-                                <FormLabel className="destinationRangeDropdownLabel">
-                                    <strong>Range</strong>
-                                </FormLabel>
-                                <InputRange 
-                                    name={"destinationRange"}
-                                    value={this.props.formFields.destinationRange}
-                                    onChangeValue={this.handleInputRangeChange}
-                                    onIncrease={this.increase}
-                                    onDecrease={this.decrease}
-                                />
-                            </Form.Group>
-                        </InputGroup>
-                    </Form.Row>
-                    <Button size="lg" type="submit"> Search </Button>
-                </Form>
-            </div>
+                    <InputGroup className="justify-content-center">
+                        {/* <!- Destination Input Group --> */}
+                        <Form.Group className="destinationInputFormGroup">
+                            {/* <!- Destination Input text --> */}
+                            <Form.Label className="destinationLabel">
+                                <strong>Destination</strong>
+                            </Form.Label>
+                            <Form.Control 
+                                type="input"
+                                id={"destination"}
+                                name={"destination"}
+                                placeholder="Address/zip code" 
+                                required={true}
+                                onChange={this.handleChange}
+                            />
+                        </Form.Group>
+                        {/* <!- Destination Input Range Group --> */}
+                        <Form.Group controlId="destinationAdressRangeControl">
+                            {/* <!- Destination Range --> */}
+                            <FormLabel className="destinationRangeDropdownLabel">
+                                <strong>Range</strong>
+                            </FormLabel>
+                            <InputRange 
+                                name={"destinationRange"}
+                                value={this.props.formFields.destinationRange}
+                                onChangeValue={this.handleInputRangeChange}
+                                onIncrease={this.increase}
+                                onDecrease={this.decrease}
+                            />
+                        </Form.Group>
+                    </InputGroup>
+                </Form.Row>
+                <Button size="lg" type="submit"> Search </Button>
+            </Form>
           </React.Fragment>
         );
   }

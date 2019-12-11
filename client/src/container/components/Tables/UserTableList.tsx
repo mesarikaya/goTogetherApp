@@ -31,12 +31,11 @@ class UserTableList extends React.Component<Props & RouteComponentProps < PathPr
         // tslint:disable-next-line: no-console
         console.log("Loading the data", data);
         const rows = [];
-
         for (const obj in data) {
             if (data.hasOwnProperty(obj)) {
                 rows.push(
                     <tr>
-                      <td className="text-center">{data[obj].firstName + data[obj].middleName}</td>
+                      <td className="text-center">{data[obj].firstName + " " + data[obj].middleName + "."}</td>
                       <td className="text-center">{data[obj].surname}</td>
                       <td className="text-center">{data[obj].userName}</td>
                       <td className="text-center">{data[obj].address}</td>

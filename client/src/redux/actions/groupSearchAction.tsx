@@ -70,8 +70,7 @@ export function SearchGroups(event: React.FormEvent<HTMLFormElement> | null,
                 console.log("response is", response.data);
                 if(Array.isArray(response.data) && response.data.length){
                     const newResponseData = response.data;
-                    const prevGroups = [];
-                    
+                    const prevGroups:GroupSearchResult[] = [];
                     for(const key in existingGroups){
                         if (existingGroups.hasOwnProperty(key)){
                             prevGroups.push(existingGroups[key]);

@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Service
 @Transactional
-public final class AddressServiceImpl implements AddressService {
+public class AddressServiceImpl implements AddressService {
 
     private final AddressRepository addressRepository;
     private final RestTemplate restTemplate;

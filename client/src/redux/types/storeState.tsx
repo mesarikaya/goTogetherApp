@@ -1,6 +1,7 @@
 import { SecurityState } from './system/securityState';
 import { GroupSearchResult } from './userInterface/groupSearchResult';
 import { GroupSearchFormFields } from './userInterface/groupSearchFormFields';
+import { UserSearchResult } from './userInterface/userSearchResult';
 
 export interface StoreState {
 
@@ -9,7 +10,9 @@ export interface StoreState {
         groups: GroupSearchResult[],
         page: number
     };
+    userSearchResults: {
+        users: UserSearchResult[],
+        page: number
+    }
     groupSearchFormFields: GroupSearchFormFields;
-    size: number;
-
 }

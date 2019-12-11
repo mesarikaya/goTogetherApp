@@ -1,6 +1,5 @@
 package com.mes.gotogether.domains.responses;
 
-import com.mes.gotogether.domains.Address;
 import com.mes.gotogether.domains.User;
 import java.util.Objects;
 import lombok.Data;
@@ -17,8 +16,8 @@ public final class UserSearchResponse {
             private final String firstName;
             private final String middleName;
             private final String surname;
-            private final String username;
-            private final Address address;
+            private final String userName;
+            private final String address;
             
             public UserSearchResponse(User user){
                             log.info("*******CONVERTING TO USER RESPONSE******");
@@ -26,8 +25,8 @@ public final class UserSearchResponse {
                             this.firstName = user.getFirstName();
                             this.middleName = user.getMiddleName();
                             this.surname = user.getLastName();
-                            this.username = user.getUserId();
-                            this.address = user.getAddress();
+                            this.userName = user.getUserId();
+                            this.address = user.getAddress().toString();
                             log.info("Created User is: " + this);
             }
     

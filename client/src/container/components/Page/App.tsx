@@ -43,7 +43,6 @@ export interface State {
         page: number
     };
     groupSearchFormFields: GroupSearchFormFields;
-    size: number;
 };
 
 // These props are provided by the router
@@ -61,7 +60,6 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
         super(props);
 
         const currentState = store.getState();
-
         this.state = {
             system: currentState.system,
             groupSearchResults: currentState.groupSearchResults,
@@ -70,8 +68,7 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
               originRange: 2,
               destination: '',
               destinationRange: 2
-            },
-            size: 9
+            }
         };
 
         this.loadMore = this.loadMore.bind(this);
@@ -118,7 +115,7 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
             <div className="container">
                 <div className="row align-items-center">
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-8 col-xl-7 my-auto">  
-                        <div className="mx-auto my-auto" >
+                        <div className="mx-auto my-auto">
                             <Carousel className="openingCarousel"
                                 interval={5000}
                                 nextIcon={<span aria-hidden="true"/>}
@@ -152,44 +149,46 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-4 col-xl-5 my-auto"> 
                         <div className="container mx-auto my-auto">
                             <div className="searchFormRow mx-auto my-auto">
-                                <GroupSearchForm 
-                                  formFields={this.state.groupSearchFormFields}
-                                  page={this.props.groupSearchResults.page}
-                                  token={this.state.system.token} 
-                                  updateSearchFormFields={this.handleGroupSearchFormUpdate}
-                                  onSubmit={this.props.onSubmit}
-                                />
+                                <div className="searchForm">                                  
+                                    <h1 className="joinAGroupText text-center">Join a group?</h1>
+                                    <p className="joinAGroupSubText text-center">Search with ease based on the origin and destination radius</p>
+                                
+                                    <GroupSearchForm 
+                                    formFields={this.state.groupSearchFormFields}
+                                    page={this.props.groupSearchResults.page}
+                                    token={this.state.system.token} 
+                                    updateSearchFormFields={this.handleGroupSearchFormUpdate}
+                                    onSubmit={this.props.onSubmit}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <br />
-
+                
                 <div className="container">                       
                     {Object.keys(groupSearchResult).length>0 ? (
                     <div>
                         <CardDeck>
                             {Object.keys(groupSearchResult).map((key) => (
-                                    <GroupCard key={groupSearchResult[key].name} 
-                                    name={groupSearchResult[key].name} 
-                                    groupDetails={groupSearchResult[key].groupDetails} 
-                                    members={groupSearchResult[key].members}
-                                    group = {groupSearchResult[key]}
-                                    />
-                                ))
+                                <GroupCard key={groupSearchResult[key].name} 
+                                name={groupSearchResult[key].name} 
+                                groupDetails={groupSearchResult[key].groupDetails} 
+                                members={groupSearchResult[key].members}
+                                group = {groupSearchResult[key]}
+                                />
+                            ))
                             }
                        </CardDeck>
                        {this.state.groupSearchResults.page !== 0 ? 
                             <Button type="button" onClick={this.loadMore}> Load More... </Button>: null
                        }
-                       
                     </div>): null
                     }        
                 </div>
-
             </div>
-            
         </div>);
   }
 }
