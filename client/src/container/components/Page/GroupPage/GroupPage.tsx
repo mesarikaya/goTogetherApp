@@ -25,6 +25,8 @@ import { UserSearchResult } from 'src/redux/types/userInterface/userSearchResult
 import { GroupSearchResult } from 'src/redux/types/userInterface/groupSearchResult';
 import { GroupSearchFormFields } from 'src/redux/types/userInterface/groupSearchFormFields';
 import UserTableList from '../../Tables/UserTableList';
+import { DeleteMember } from 'src/redux/actions/groupMemberDeleteAction';
+import { addToWaitingList } from 'src/redux/actions/addToWaitingList';
 
 
 /** CREATE Prop and State interfaces to use in the component */
@@ -34,6 +36,8 @@ export interface GroupProps{
     userSearchFormFields: GroupSearchFormFields;
     loginFormFields: LoginFormFields;
     onSubmit: typeof SearchUsers;
+    onRemoveMember: typeof DeleteMember;
+    onAddToWaitingList: typeof addToWaitingList;
 }
 
 export interface GroupState{
@@ -51,19 +55,40 @@ interface PathProps {
     match: any;
 }
 
-
-class GroupPage extends React.Component<GroupProps & RouteComponentProps < PathProps >, GroupState>{
+class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathProps>, GroupState>{
 
     public state: GroupState;
 
-    constructor(props: GroupProps& RouteComponentProps < PathProps >){
+    constructor(props: GroupProps& RouteComponentProps<PathProps>){
 
         super(props);
         const currAppState = store.getState();
-        const localStorageSelectedGroup = window.localStorage.getItem('selectedGroupCard');
+        const selectedGroup:GroupSearchResult = this.getMembersFromLocalStorage(); 
 
-        // tslint:disable-next-line: no-console
-        console.log("Local storage selected group:", localStorageSelectedGroup);
+        /* const userResults: {users: UserSearchResult[], page: number} = {
+            users: [],
+            page: 0
+        }; */
+
+        this.state = {
+            groupInfo: selectedGroup,
+            userSearchFormFields: {
+                origin: '',
+                originRange: 2,
+                destination: '',
+                destinationRange: 2
+            },
+            storeState: currAppState,
+            isUserInGroup: this.isUserInGroup(selectedGroup.members.users),
+            isUserOwnerInGroup: this.isOwnerInGroup(selectedGroup.members.users)
+        }
+
+        this.loadMore = this.loadMore.bind(this);
+        this.handleUserSearchFormUpdate = this.handleUserSearchFormUpdate.bind(this);
+    }
+
+    public getMembersFromLocalStorage(){
+        const localStorageSelectedGroup = window.localStorage.getItem('selectedGroupCard');
         let selectedGroup:GroupSearchResult= {
             id: '',
             name: '',
@@ -86,54 +111,33 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps < PathP
         if (!isNullOrUndefined(localStorageSelectedGroup)){
             selectedGroup = JSON.parse(localStorageSelectedGroup);
         }
-        
-        const groupUser = this.isUserInGroup(selectedGroup.members.users);
-        const groupOwner = this.isOwnerInGroup(selectedGroup.members.users);
-        // tslint:disable-next-line: no-console
-        console.log("Group page currentAppState:", currAppState);
 
-        /* const userResults: {users: UserSearchResult[], page: number} = {
-            users: [],
-            page: 0
-        }; */
-
-        this.state = {
-            groupInfo: selectedGroup,
-            userSearchFormFields: {
-                origin: '',
-                originRange: 2,
-                destination: '',
-                destinationRange: 2
-            },
-            storeState: currAppState,
-            isUserInGroup:groupUser,
-            isUserOwnerInGroup: groupOwner
-        }
-
-        this.loadMore = this.loadMore.bind(this);
-        this.handleUserSearchFormUpdate = this.handleUserSearchFormUpdate.bind(this);
+        return selectedGroup;
     }
+    
 
     public componentDidUpdate(oldProps: GroupProps& RouteComponentProps < PathProps >) {
         
         // tslint:disable-next-line: no-console
-        console.log("Inside componentDidUpdate", store.getState());
-
-        const newProps = this.props;
-        if(oldProps.groupInfo !== newProps.groupInfo) {
-            this.setState({ 
-                groupInfo: this.props.groupInfo 
-            });
-        }
-
+        console.log("Inside componentDidUpdate for GroupPage", store.getState());
+        const selectedGroup: GroupSearchResult = this.getMembersFromLocalStorage();
         const currAppState = store.getState();
-        if(this.state.storeState !== currAppState) {
-            // tslint:disable-next-line: no-console
-            console.log("Inside componentDidUpdate2", store.getState());
+        const newProps = this.props;
+
+        // tslint:disable-next-line: no-console
+        console.log("ComponentUpdate groups info props:", this.state.groupInfo);
+
+        if(oldProps.groupInfo !== newProps.groupInfo 
+            || this.state.storeState !== currAppState
+            || this.state.storeState.currentSelectedMembers !== currAppState.currentSelectedMembers) {
             this.setState({ 
-                storeState: currAppState
+                groupInfo: selectedGroup,
+                storeState: currAppState,
+                isUserInGroup: this.isUserInGroup(selectedGroup.members.users),
+                isUserOwnerInGroup: this.isOwnerInGroup(selectedGroup.members.users)
             });
         }
+        
     }
 
     public isUserInGroup(data:GroupUser[]) {
@@ -170,18 +174,20 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps < PathP
                     <h2 className="text-center">                                
                         {this.state.groupInfo.name}: <span>
                                                         {this.state.groupInfo.groupDetails.originCity}, {this.state.groupInfo.groupDetails.originZipCode}
-                                                        <i className="fas fa-angle-double-right fa-3x"/><i className="fas fa-angle-double-right fa-3x"/> 
+                                                          <i className="fas fa-angle-double-right fa-3x align-middle pl-2"/><i className="fas fa-angle-double-right fa-3x align-middle pr-2"/>  
                                                         {this.state.groupInfo.groupDetails.destinationCity},    
                                                         {this.state.groupInfo.groupDetails.originZipCode} 
                                                         {this.state.isUserOwnerInGroup && this.state.isUserInGroup ? <Button variant="info" size="sm">Delete Group</Button>: null}
                                                      </span>
                     </h2>
-                    <CardDeck>
-                        <GroupMemberTable key={this.state.groupInfo.id} 
+                    <CardDeck key={this.state.groupInfo.id}>
+                        <GroupMemberTable key={this.state.groupInfo.id}
                                           groupInfo={this.state.groupInfo}
                                           userName={this.state.storeState.system.userName}
                                           isUserInGroup={this.state.isUserInGroup}
-                                          isUserOwnerInGroup={this.state.isUserOwnerInGroup}/>
+                                          isUserOwnerInGroup={this.state.isUserOwnerInGroup}
+                                          token={this.state.storeState.system.token}
+                                          onRemoveMember={this.props.onRemoveMember}/>
 
                         <GroupWaitingList key={this.state.groupInfo.id} 
                                           groupInfo={this.state.groupInfo}
@@ -198,7 +204,7 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps < PathP
                             <GroupSearchForm 
                                 formFields={this.state.userSearchFormFields}
                                 page={this.state.storeState.userSearchResults.page}
-                                token={this.state.storeState.system.token} 
+                                token={this.state.storeState.system.token}
                                 updateSearchFormFields={this.handleUserSearchFormUpdate}
                                 onSubmit={this.props.onSubmit}
                             />
@@ -206,10 +212,14 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps < PathP
                     </div>
                 </div>
 
-                <div className="container mx-auto my-auto">                       
+                <div className="container mx-auto my-auto p-2">                       
                     {Object.keys(userSearchResult).length>0 ? (
                     <div>
-                        <UserTableList userList={this.state.storeState.userSearchResults.users} />
+                        <UserTableList userList={this.state.storeState.userSearchResults.users}
+                                       groupInfo={this.state.groupInfo}
+                                       token={this.state.storeState.system.token}
+                                       onInviteUser={this.props.onAddToWaitingList}
+                        />
                        {this.state.storeState.userSearchResults.page !== 0 ? 
                             <Button type="button" onClick={this.loadMore}> Load More... </Button>: null
                        }
@@ -241,7 +251,21 @@ const mapDispatchToProps = (dispatch: any) => {
             existingUsers: UserSearchResult[],
             page: number,
             token: string,
-        ) => dispatch(SearchUsers(e, formFields, existingUsers, page, token))
+        ) => dispatch(SearchUsers(e, formFields, existingUsers, page, token)),
+        onRemoveMember: (
+            e: React.MouseEvent<HTMLButtonElement>,
+            currentGroup: GroupSearchResult,
+            groupId: string,
+            userId: string,
+            token: string
+        ) => dispatch(DeleteMember(e, currentGroup, groupId, userId, token)),
+        onAddToWaitingList: (
+            e: React.MouseEvent<HTMLButtonElement>,
+            currentGroup: GroupSearchResult,
+            groupId: string,
+            userId: string,
+            token: string
+        ) => dispatch(addToWaitingList(e, currentGroup, groupId, userId, token))
     }
 }
 

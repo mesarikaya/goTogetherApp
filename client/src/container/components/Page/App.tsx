@@ -32,6 +32,7 @@ export interface Props {
         groups: GroupSearchResult[],
         page: number
     };
+    currentSelectedGroup: GroupSearchResult;
     onSubmit: typeof SearchGroups;
     updateGroupSearchFormFields: (formFields: GroupSearchFormFields) => void;
 };
@@ -62,7 +63,7 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
         const currentState = store.getState();
         this.state = {
             system: currentState.system,
-            groupSearchResults: currentState.groupSearchResults,
+            groupSearchResults: {groups:[], page:0},
             groupSearchFormFields: {
               origin: '',
               originRange: 2,
@@ -94,15 +95,12 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
     public componentDidUpdate(oldProps: Props) {
         
         const newProps = this.props;
-        if(oldProps.system !== newProps.system && oldProps.groupSearchResults !== newProps.groupSearchResults) {
+        if(oldProps.system !== newProps.system 
+            || oldProps.groupSearchResults !== newProps.groupSearchResults) {
             this.setState({ 
                 system:this.props.system,
-                groupSearchResults:this.props.groupSearchResults 
+                groupSearchResults:this.props.groupSearchResults
             });
-        } else if(oldProps.system !== newProps.system){
-            this.setState({ system:this.props.system });
-        } else if(oldProps.groupSearchResults !== newProps.groupSearchResults) {
-            this.setState({ groupSearchResults:this.props.groupSearchResults });
         }
     }
 
@@ -173,7 +171,9 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
                     <div>
                         <CardDeck>
                             {Object.keys(groupSearchResult).map((key) => (
-                                <GroupCard key={groupSearchResult[key].name} 
+                                <GroupCard 
+                                key={groupSearchResult[key]} 
+                                groupIndex={key}
                                 name={groupSearchResult[key].name} 
                                 groupDetails={groupSearchResult[key].groupDetails} 
                                 members={groupSearchResult[key].members}

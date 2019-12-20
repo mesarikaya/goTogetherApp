@@ -31,7 +31,7 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
 
         System.out.println("Load security context Server Exchange load");
         ServerHttpRequest request = swe.getRequest();
-        System.out.println("rrequest is:" + request.getHeaders());
+        System.out.println("Request is:" + request.getHeaders());
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         System.out.println("Auth header: " + authHeader);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {

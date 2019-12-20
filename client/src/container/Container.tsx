@@ -13,6 +13,7 @@ import {store} from "../redux/store";
 import { SecurityState } from '../redux/types/system/securityState';
 import { GroupSearchResult } from 'src/redux/types/userInterface/groupSearchResult';
 import { UserSearchResult } from 'src/redux/types/userInterface/userSearchResult';
+import { GroupUser } from 'src/redux/types/userInterface/groupUser';
 
 
 
@@ -27,6 +28,12 @@ interface AppProps {
         users: UserSearchResult[],
         page: number
     };
+    currentSelectedMembers: {
+        users: GroupUser[]
+    };
+    currentWaitingList: {
+        users: GroupUser[]
+    };
 }
 
 // These props are provided by the router
@@ -35,7 +42,6 @@ interface PathProps {
     location: any;
     match: any;
 }
-
 export interface State {
     system: SecurityState;
     groupSearchResults: {
@@ -45,6 +51,12 @@ export interface State {
     userSearchResults: {
         users: UserSearchResult[],
         page: number
+    };
+    currentSelectedMembers: {
+        users: GroupUser[]
+    };
+    currentWaitingList: {
+        users: GroupUser[]
     };
 };
 
@@ -62,27 +74,26 @@ class Container extends React.Component<AppProps & RouteComponentProps<PathProps
         this.state = {
             system: currentState.system,
             groupSearchResults: currentState.groupSearchResults,
-            userSearchResults: currentState.userSearchResults
+            userSearchResults: currentState.userSearchResults,
+            currentSelectedMembers: currentState.currentSelectedMembers,
+            currentWaitingList: currentState.currentWaitingList
         };
     }
 
-    public componentDidUpdate(oldProps: AppProps) {
-        
+    public componentDidUpdate(oldProps: AppProps) { 
         const newProps = this.props;
         if(oldProps.system !== newProps.system 
-            && oldProps.groupSearchResults !== newProps.groupSearchResults) {
+            || oldProps.groupSearchResults !== newProps.groupSearchResults 
+            || oldProps.userSearchResults !== newProps.userSearchResults
+            || oldProps.currentSelectedMembers !== newProps.currentSelectedMembers
+            || oldProps.currentWaitingList !== newProps.currentWaitingList) {
             this.setState({ 
                 system:this.props.system,
-                groupSearchResults:this.props.groupSearchResults 
+                groupSearchResults:this.props.groupSearchResults,
+                userSearchResults:this.props.userSearchResults,
+                currentSelectedMembers:this.props.currentSelectedMembers,
+                currentWaitingList: this.props.currentWaitingList
             });
-        } else if(oldProps.system !== newProps.system){
-            this.setState({ system:this.props.system });
-        } else if(oldProps.groupSearchResults !== newProps.groupSearchResults) {
-            this.setState({ groupSearchResults:this.props.groupSearchResults });
-        }
-
-        if(oldProps.userSearchResults !== newProps.userSearchResults) {
-            this.setState({ userSearchResults:this.props.userSearchResults });
         }
     }
 
@@ -104,7 +115,9 @@ const mapStateToProps = (
     ) => ({
     system: state.system,
     groupSearchResults: state.groupSearchResults,
-    userSearchResults: state.userSearchResults
+    userSearchResults: state.userSearchResults,
+    currentSelectedMembers: state.currentSelectedMembers,
+
 })  
 
 export default withRouter(connect(mapStateToProps, null)(Container));

@@ -2,10 +2,13 @@ package com.mes.gotogether.services.domain;
 
 import com.mes.gotogether.domains.Address;
 import com.mes.gotogether.domains.Group;
+import com.mes.gotogether.domains.User;
 import com.mes.gotogether.repositories.domain.GroupRepository;
 import com.mes.gotogether.services.externalconnections.GeoLocationService;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Pageable;
@@ -241,15 +244,12 @@ public class GroupServiceImpl implements GroupService{
     @Override
     public Mono<Group> saveOrUpdate(Group group) {
         
-        if (!Objects.isNull(group)){
-            
-            System.out.println("REQUESTING SAVE OR UPDATE with  group: " + group);         
+        if (!Objects.isNull(group)){     
             return groupRepository.findById(group.getId())
                                                    .log()
                                                    .flatMap(groupInDb -> {
-                                                       System.out.println("Group in repository: " + groupInDb);
                                                             group.setId(groupInDb.getId());
-                                                            
+                                                            log.info("Updating the group:");
                                                             return groupRepository.save(group);
                                                    })
                                                    .switchIfEmpty(Mono.defer(() -> {
@@ -265,9 +265,29 @@ public class GroupServiceImpl implements GroupService{
         }
     }
 
+    @Override
+    public Mono<Set<User>> findMembers(ObjectId id) {
+        
+        return this.findById(id)
+                .flatMap(group ->  Mono.just(group.getMembers()))
+                .switchIfEmpty(Mono.defer(() -> Mono.empty()));
+    }
+
+    @Override
+    public Mono<Group> deleteMemberByUserId(ObjectId id, String userId) {
+        
+        return this.findById(id)
+                .flatMap(group -> {
+                    Set<User> members = group.getMembers();
+                    Predicate<User> isUser = user -> user.getUserId().equals(userId);                    
+                    members.removeIf(isUser);
+                    group.setMembers(members);
+                    return this.saveOrUpdate(group);
+                })
+                .switchIfEmpty(Mono.defer(() -> Mono.empty()));
+    }
+    
     // SAVE Fake group
-
-
     @Override
     public Mono<Group> saveFakeGroup(Group group) {
         return groupRepository.save(group);

@@ -2,6 +2,8 @@ package com.mes.gotogether.services.domain;
 
 import com.mes.gotogether.domains.Address;
 import com.mes.gotogether.domains.Group;
+import com.mes.gotogether.domains.User;
+import java.util.Set;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Flux;
@@ -52,7 +54,9 @@ public interface GroupService {
             double originLat, double originLong, double originRadius,
             double destLat, double destLong, double destRadius,
             Pageable page);
-
+    
+    Mono<Set<User>> findMembers(ObjectId id);
+    
     Flux<Group> findAll();
 
     Mono<Group> saveOrUpdate(Group group);
@@ -60,4 +64,6 @@ public interface GroupService {
 
     Mono<Void> deleteById(ObjectId id);
     Mono<Void> deleteAll();
+
+    Mono<Group> deleteMemberByUserId(ObjectId id, String userId);
 }

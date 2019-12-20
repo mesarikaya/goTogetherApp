@@ -7,9 +7,14 @@ import { UserSearchResult } from 'src/redux/types/userInterface/userSearchResult
 import { Card, Button, Table } from 'react-bootstrap';
 import '../../../stylesheets/css/cards/groupCard.css';
 import { withRouter, RouteComponentProps } from 'react-router';
+import { addToWaitingList } from 'src/redux/actions/addToWaitingList';
+import { GroupSearchResult } from 'src/redux/types/userInterface/groupSearchResult';
 
 interface Props {
-    userList: UserSearchResult[]
+    groupInfo: GroupSearchResult;
+    userList: UserSearchResult[];
+    token: string;
+    onInviteUser: typeof addToWaitingList;
 }
 
 // These props are provided by the router
@@ -19,11 +24,13 @@ interface PathProps {
     match: any;
 }
 
+
 class UserTableList extends React.Component<Props & RouteComponentProps < PathProps >>{
 
     constructor(props: Props & RouteComponentProps < PathProps >){
         super(props);
         this.createTable = this.createTable.bind(this);
+        this.handleOnInviteUser = this.handleOnInviteUser.bind(this);
     }
 
     public createTable(data: UserSearchResult[]) {
@@ -39,7 +46,7 @@ class UserTableList extends React.Component<Props & RouteComponentProps < PathPr
                       <td className="text-center">{data[obj].surname}</td>
                       <td className="text-center">{data[obj].userName}</td>
                       <td className="text-center">{data[obj].address}</td>
-                      <td className="text-center"><Button variant="info" size="sm">Invite</Button></td>
+                      <td className="text-center"><Button variant="info" size="sm" name={data[obj].userName} onClick={this.handleOnInviteUser}>Invite</Button></td>
                     </tr>
                 );
             }
@@ -48,12 +55,23 @@ class UserTableList extends React.Component<Props & RouteComponentProps < PathPr
         return rows;
     }
 
+    
+    public handleOnInviteUser = async (event: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
+
+        event.preventDefault();
+        const userId = event.currentTarget.getAttribute('name');
+        const groupId = this.props.groupInfo.id;
+        if(userId && groupId){
+            this.props.onInviteUser(event, this.props.groupInfo, groupId, userId, this.props.token);
+        }
+    }
+
     public render(){
         
         const tableRows = this.createTable(this.props.userList);
         return (
             <React.Fragment>
-                {/* <!- Group Member Overview Card design --> */}
+                {/* <!- USer List Card design --> */}
                 <Card className="UserListCard">
                     <Card.Header>
                         <Card.Title className="card-header-text text-center">

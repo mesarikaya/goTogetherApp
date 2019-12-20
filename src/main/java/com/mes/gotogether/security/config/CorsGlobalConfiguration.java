@@ -16,7 +16,7 @@ public class CorsGlobalConfiguration implements WebFluxConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins("http://localhost:3000")
-                .allowedMethods("GET, POST, OPTIONS")
+                .allowedMethods("GET, POST, DELETE, OPTIONS", "PUT")
                 .allowedHeaders("X-PINGOTHER","Origin","X-Requested-With","X-HTTP-Method-Override", "Content-Type","Accept","X-Auth-Token")
                 .allowCredentials(true)
                 .exposedHeaders("Access-Control-Expose-Headers", "Authorization", "Cache-Control", 

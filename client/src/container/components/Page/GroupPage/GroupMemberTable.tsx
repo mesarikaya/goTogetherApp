@@ -7,6 +7,7 @@ import '../../../../stylesheets/css/cards/CardTable.css';
 import { GroupSearchResult } from 'src/redux/types/userInterface/groupSearchResult';
 import { GroupUser } from 'src/redux/types/userInterface/groupUser';
 import { Table, Card, Button } from 'react-bootstrap';
+import { DeleteMember } from 'src/redux/actions/groupMemberDeleteAction';
 
 
 export interface Props {
@@ -15,6 +16,8 @@ export interface Props {
     userName: string;
     isUserInGroup: boolean;
     isUserOwnerInGroup: boolean;
+    token: string;
+    onRemoveMember: typeof DeleteMember;
 }
 
 class GroupMemberTable extends React.Component<Props,{}>{
@@ -23,16 +26,7 @@ class GroupMemberTable extends React.Component<Props,{}>{
     constructor(props:Props){
         super(props);
         this.createTable = this.createTable.bind(this);
-    }
-
-    public componentDidUpdate(oldProps: Props) {
-        
-        const newProps = this.props;
-        if(oldProps.groupInfo !== newProps.groupInfo) {
-            this.setState({ 
-                groupInfo: this.props.groupInfo 
-            });
-        }
+        this.handleRemoveMemberClick = this.handleRemoveMemberClick.bind(this);
     }
 
     public createTable(data: GroupUser[]) {
@@ -47,25 +41,25 @@ class GroupMemberTable extends React.Component<Props,{}>{
                     if(this.props.isUserOwnerInGroup) {
                         if (this.props.userName === data[obj].userId){
                             rows.push(
-                              <tr>
+                              <tr key={data[obj].userId}>
                                 <td className="text-center">{data[obj].userName}</td>
                                 <td className="text-center">{data[obj].owner ? 'Owner' : 'Member'}</td>
-                                <td className="text-center"><Button variant="info" size="sm">Leave</Button></td>
+                                <td className="text-center"><Button variant="info" size="sm" name={data[obj].userId} onClick={this.handleRemoveMemberClick}>Leave</Button></td>
                               </tr>
                             );
                         }else{
                             rows.push(
-                                <tr>
+                                <tr key={data[obj].userId}>
                                   <td className="text-center">{data[obj].userName}</td>
                                   <td className="text-center">{data[obj].owner ? 'Owner' : 'Member'}</td>
-                                  <td className="text-center">{data[obj].owner ? null : <Button variant="info" size="sm">Remove</Button>}</td>
+                                  <td className="text-center">{data[obj].owner ? null : <Button variant="info" size="sm" name={data[obj].userId} onClick={this.handleRemoveMemberClick}>Remove</Button>}</td>
                                 </tr>
                             );
                         }
                     } else {
                         if (this.props.userName === data[obj].userId){
                             rows.push(
-                                <tr>
+                                <tr key={data[obj].userId}>
                                   <td className="text-center">{data[obj].userName}</td>
                                   <td className="text-center">{data[obj].owner ? 'Owner' : 'Member'}</td>
                                   <td className="text-center"><Button variant="info" size="sm">Leave</Button></td>
@@ -73,7 +67,7 @@ class GroupMemberTable extends React.Component<Props,{}>{
                             );
                         }else{
                             rows.push(
-                                <tr>
+                                <tr key={data[obj].userId}>
                                     <td className="text-center">{data[obj].userName}</td>
                                     <td className="text-center">{data[obj].owner ? 'Owner' : 'Member'}</td>
                                     <td/>
@@ -83,7 +77,7 @@ class GroupMemberTable extends React.Component<Props,{}>{
                     }
                 } else {
                     rows.push(
-                        <tr>
+                        <tr key={data[obj].userId}>
                             <td className="text-center">{data[obj].userName}</td>
                             <td className="text-center">{data[obj].owner ? 'Owner' : 'Member'}</td>
                             <td/>
@@ -94,6 +88,16 @@ class GroupMemberTable extends React.Component<Props,{}>{
         }
 
         return rows;
+    }
+
+    public handleRemoveMemberClick = async (event: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
+
+        event.preventDefault();
+        const userId = event.currentTarget.getAttribute('name');
+        const groupId = this.props.groupInfo.id;
+        if(userId && groupId){
+            this.props.onRemoveMember(event, this.props.groupInfo, groupId, userId, this.props.token);
+        }
     }
 
     public render(){

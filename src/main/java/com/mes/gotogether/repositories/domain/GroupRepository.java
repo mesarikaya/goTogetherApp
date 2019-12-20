@@ -41,5 +41,5 @@ public interface GroupRepository extends ReactiveMongoRepository<Group, ObjectId
             double originLongMin, double originLongMax,
             double destLatMin, double destLatMax,
             double destLongMin, double destLongMax,
-            Pageable page);
+            Pageable page);    
 }

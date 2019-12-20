@@ -11,7 +11,8 @@ import { GroupSearchResult } from 'src/redux/types/userInterface/groupSearchResu
 import { withRouter, RouteComponentProps } from 'react-router';
 
 interface Props {
-    key: string,
+    key: string;
+    groupIndex: string;
     name: string;
     groupDetails: any;
     members: GroupUser;
@@ -28,8 +29,9 @@ interface PathProps {
 class GroupCard extends React.Component<Props & RouteComponentProps < PathProps >>{
 
     constructor(props: Props & RouteComponentProps < PathProps >){
+        
         super(props);
-
+        
         this.handleOnClick = this.handleOnClick.bind(this);
     }
 

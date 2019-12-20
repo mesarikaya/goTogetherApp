@@ -27,12 +27,12 @@ class GroupWaitingList extends React.Component<Props,{}>{
 
     public componentDidUpdate(oldProps: Props) {
         
-        const newProps = this.props;
+        /*const newProps = this.props;
         if(oldProps.groupInfo !== newProps.groupInfo) {
             this.setState({ 
                 groupInfo: this.props.groupInfo 
             });
-        }
+        }*/
     }
 
     public createTable(data: GroupUser[]) {
@@ -46,20 +46,20 @@ class GroupWaitingList extends React.Component<Props,{}>{
                 if(this.props.isUserInGroup){
                     if(this.props.isUserOwnerInGroup) {
                         rows.push(
-                            <tr>
+                            <tr key={data[obj].userId}>
                                 <td className="text-center">{data[obj].userName}</td>
                                 <td className="text-center">{data[obj].address}</td>
                                 <td className="text-center">
-                                <ButtonToolbar>
+                                <ButtonToolbar className="text-center">
                                     <Button variant="info" size="sm"><i className="far fa-check-circle"/></Button>
-                                    <Button variant="info" size="sm"><i className="far fa-times-circle"/></Button>
+                                    <Button variant="danger" size="sm"><i className="far fa-times-circle"/></Button>
                                 </ButtonToolbar>
                                 </td>
                             </tr>
                         );
                     } else {
                         rows.push(
-                            <tr>
+                            <tr key={data[obj].userId}>
                                 <td className="text-center">{data[obj].userName}</td>
                                 <td className="text-center"><i className="fas fa-eye"/></td>
                                 <td/>
@@ -68,7 +68,7 @@ class GroupWaitingList extends React.Component<Props,{}>{
                     }
                 } else {
                     rows.push(
-                        <tr>
+                        <tr key={data[obj].userId}>
                             <td className="text-center">{data[obj].userName}</td>
                             <td className="text-center"><i className="fas fa-lock"/></td>
                             <td/>
@@ -97,9 +97,9 @@ class GroupWaitingList extends React.Component<Props,{}>{
                         <Table responsive={true}>
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Adress</th>
-                                    <th>Decision</th>
+                                    <th className="text-center">Name</th>
+                                    <th className="text-center">Adress</th>
+                                    <th className="text-center">Decision</th>
                                 </tr>
                             </thead>
                             <tbody>

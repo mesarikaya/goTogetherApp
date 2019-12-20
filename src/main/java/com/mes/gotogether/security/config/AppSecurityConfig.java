@@ -1,9 +1,13 @@
 package com.mes.gotogether.security.config;
 
+import com.mes.gotogether.domains.Role;
+import com.mes.gotogether.security.jwt.JWTReactiveAuthenticationManager;
+import com.mes.gotogether.services.domain.AddressService;
+import com.mes.gotogether.services.domain.UserService;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.autoconfigure.security.reactive.EndpointRequest;
 import org.springframework.boot.autoconfigure.security.reactive.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -22,13 +26,6 @@ import org.springframework.security.web.server.csrf.WebSessionServerCsrfTokenRep
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-
-import com.mes.gotogether.domains.Role;
-import com.mes.gotogether.security.jwt.JWTReactiveAuthenticationManager;
-import com.mes.gotogether.services.domain.AddressService;
-import com.mes.gotogether.services.domain.UserService;
-
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -131,7 +128,7 @@ public class AppSecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
         configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "DELETE", "OPTIONS", "PUT"));
         configuration.setAllowedHeaders(Collections.singletonList("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

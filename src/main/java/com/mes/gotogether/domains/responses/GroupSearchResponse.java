@@ -17,7 +17,7 @@ import org.bson.types.ObjectId;
 @ToString
 public final class GroupSearchResponse {
 	
-	private final ObjectId id;
+	private final String id;
 	private final String name;
 	private final GroupDetails groupDetails;
 	private final Members members;
@@ -29,7 +29,7 @@ public final class GroupSearchResponse {
                             Objects.requireNonNull(group);
                             Objects.requireNonNull(group.getOriginAddress());
                             Objects.requireNonNull(group.getDestinationAddress());
-                            this.id = group.getId();
+                            this.id = group.getId().toHexString();
                             this.name = group.getName();
                             this.groupDetails = new GroupDetails(group.getOriginAddress().getCity(),group.getOriginAddress().getZipcode(),
                                                        group.getOriginSearchRadius(), group.getDestinationAddress().getCity(),
