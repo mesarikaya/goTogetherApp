@@ -7,14 +7,14 @@ import { UserSearchResult } from 'src/redux/types/userInterface/userSearchResult
 import { Card, Button, Table } from 'react-bootstrap';
 import '../../../stylesheets/css/cards/groupCard.css';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { addToWaitingList } from 'src/redux/actions/addToWaitingList';
+import { UpdateWaitingList } from 'src/redux/actions/UpdateWaitingList';
 import { GroupSearchResult } from 'src/redux/types/userInterface/groupSearchResult';
 
 interface Props {
     groupInfo: GroupSearchResult;
     userList: UserSearchResult[];
     token: string;
-    onInviteUser: typeof addToWaitingList;
+    onInviteUser: typeof UpdateWaitingList;
 }
 
 // These props are provided by the router
@@ -62,7 +62,7 @@ class UserTableList extends React.Component<Props & RouteComponentProps < PathPr
         const userId = event.currentTarget.getAttribute('name');
         const groupId = this.props.groupInfo.id;
         if(userId && groupId){
-            this.props.onInviteUser(event, this.props.groupInfo, groupId, userId, this.props.token);
+            this.props.onInviteUser(event, this.props.groupInfo, groupId, userId, this.props.token, 'add');
         }
     }
 

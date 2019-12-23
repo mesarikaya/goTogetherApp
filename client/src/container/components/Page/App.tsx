@@ -32,7 +32,6 @@ export interface Props {
         groups: GroupSearchResult[],
         page: number
     };
-    currentSelectedGroup: GroupSearchResult;
     onSubmit: typeof SearchGroups;
     updateGroupSearchFormFields: (formFields: GroupSearchFormFields) => void;
 };

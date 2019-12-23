@@ -4,7 +4,9 @@ export const UPDATE_GROUP_WAITINGLIST_REQUEST = 'UPDATE_GROUP_WAITINGLIST_REQUES
 
 interface UpdateGroupWaitingList {
     type: typeof UPDATE_GROUP_WAITINGLIST_REQUEST
-    payload: {users: GroupUser[]}
+    payload: {
+        users: GroupUser[]
+    }
 }
 
 export type UpdateGroupWaitingListActionType = UpdateGroupWaitingList;

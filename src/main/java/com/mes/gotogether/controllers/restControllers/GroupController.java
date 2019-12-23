@@ -1,5 +1,6 @@
 package com.mes.gotogether.controllers.restControllers;
 
+import com.mes.gotogether.domains.requests.GroupUser;
 import com.mes.gotogether.domains.responses.GroupSearchResponse;
 import com.mes.gotogether.security.jwt.JWTUtil;
 import com.mes.gotogether.security.service.SecurityUserLibraryUserDetailsService;
@@ -13,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -65,4 +68,47 @@ public class GroupController {
           return groupService.deleteMemberByUserId(new ObjectId(groupId), userId)
                                            .map(group-> new GroupSearchResponse(group));
     }
+    
+    @PutMapping("/groups/waitingList")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<GroupSearchResponse> addToWaitingList(@RequestBody GroupUser groupUser)
+    {   	
+         // TODO: Create implementation for addting user to the group waiting list   
+          return groupService.addUserToWaitingList(new ObjectId(groupUser.getGroupId()), groupUser.getUserId())
+                                           .map(group-> new GroupSearchResponse(group));
+    }
+    
+    @DeleteMapping("/groups/waitingList")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<GroupSearchResponse> deleteFromWaitingList(@RequestParam("groupId") String groupId,  @RequestParam("userId") String userId)
+    {   	
+         // TODO: Create implementation for addting user to the group waiting list
+          return groupService.deleteUserFromWaitingList(new ObjectId(groupId), userId)
+                                           .map(group-> new GroupSearchResponse(group));
+    }
+    
+    @DeleteMapping("/groups/invitesList")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<GroupSearchResponse> deleteFromInviteList(@RequestBody GroupUser groupUser)
+    {   	
+         log.info("Request is: groupId:" + groupUser.getGroupId() + " userID: " + groupUser.getUserId());
+         log.info("New object ID is: " + new ObjectId(groupUser.getGroupId()));
+         // TODO: Create implementation for addting user to the group waiting list
+          return groupService.deleteUserFromWaitingList(new ObjectId(groupUser.getGroupId()), groupUser.getUserId())
+                                           .map(group-> new GroupSearchResponse(group));
+    }
+    
+    @PutMapping("/groups/invitesList")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<GroupSearchResponse> addToInvitesList(@RequestBody GroupUser groupUser)
+    {   	
+         log.info("Request is: groupId:" + groupUser.getGroupId() + " userID: " + groupUser.getUserId());
+         log.info("New object ID is: " + new ObjectId(groupUser.getGroupId()));
+         // TODO: Create implementation for addting user to the group waiting list   
+          return groupService.addUserToWaitingList(new ObjectId(groupUser.getGroupId()), groupUser.getUserId())
+                                           .map(group-> new GroupSearchResponse(group));
+    }
+    
+
+    
 }

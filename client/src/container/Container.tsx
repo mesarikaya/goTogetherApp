@@ -117,7 +117,7 @@ const mapStateToProps = (
     groupSearchResults: state.groupSearchResults,
     userSearchResults: state.userSearchResults,
     currentSelectedMembers: state.currentSelectedMembers,
-
+    currentWaitingList: state.currentWaitingList
 })  
 
 export default withRouter(connect(mapStateToProps, null)(Container));

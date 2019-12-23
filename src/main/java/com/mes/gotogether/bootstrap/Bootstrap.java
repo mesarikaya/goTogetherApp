@@ -31,8 +31,8 @@ public class Bootstrap implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-    	
-         /*List<User> users = userService.findAllUsers().block();
+         /*	
+         List<User> users = userService.findAllUsers().block();
          
           if (CollectionUtils.isEmpty(users)){
                     // Delete current database
@@ -192,7 +192,8 @@ public class Bootstrap implements CommandLineRunner {
          } else{
               log.info("Bootstrap data is already available!");
           }*/
-       /*
+       
+         /*
         // Delete current database
         groupService.deleteAll().block();
         addressService.deleteAll().block();
@@ -342,7 +343,7 @@ public class Bootstrap implements CommandLineRunner {
                 }
                      
                 // Add user to the group owners set
-                int random = new Random().nextInt(3)+0;
+                int random = new Random().nextInt(1)+0;
                 
                // Add user to the group membership set
                 if(group.getMembershipRequests().size()>0) {
@@ -377,7 +378,7 @@ public class Bootstrap implements CommandLineRunner {
             userService.saveOrUpdateUser(user).block();
         }
         
-        System.out.println("FAKE data creation is successfull!");*/
-        
+        System.out.println("FAKE data creation is successfull!");
+        */
     }
 }

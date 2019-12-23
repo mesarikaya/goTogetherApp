@@ -7,6 +7,7 @@ import '../../../../stylesheets/css/cards/CardTable.css';
 import { GroupSearchResult } from 'src/redux/types/userInterface/groupSearchResult';
 import { GroupUser } from 'src/redux/types/userInterface/groupUser';
 import { Table, Card, Button, ButtonToolbar } from 'react-bootstrap';
+import { UpdateWaitingList } from 'src/redux/actions/UpdateWaitingList';
 
 
 export interface Props {
@@ -15,6 +16,8 @@ export interface Props {
     userName: string;
     isUserInGroup: boolean;
     isUserOwnerInGroup: boolean;
+    token: string;
+    onUpdateWaitingList: typeof UpdateWaitingList;
 }
 
 class GroupWaitingList extends React.Component<Props,{}>{
@@ -22,6 +25,8 @@ class GroupWaitingList extends React.Component<Props,{}>{
 
     constructor(props:Props){
         super(props);
+        this.handleOnAccept=this.handleOnAccept.bind(this);
+        this.handleOnReject=this.handleOnReject.bind(this);
         this.createTable = this.createTable.bind(this);
     }
 
@@ -33,6 +38,24 @@ class GroupWaitingList extends React.Component<Props,{}>{
                 groupInfo: this.props.groupInfo 
             });
         }*/
+    }
+
+    public handleOnAccept= async (event: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
+        event.preventDefault();
+        const userId = event.currentTarget.getAttribute('name');
+        const groupId = this.props.groupInfo.id;
+        if(userId && groupId){
+            this.props.onUpdateWaitingList(event, this.props.groupInfo, groupId, userId, this.props.token, 'add');
+        }
+    }
+
+    public handleOnReject= async (event: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
+        event.preventDefault();
+        const userId = event.currentTarget.getAttribute('name');
+        const groupId = this.props.groupInfo.id;
+        if(userId && groupId){
+            this.props.onUpdateWaitingList(event, this.props.groupInfo, groupId, userId, this.props.token, 'delete');
+        }
     }
 
     public createTable(data: GroupUser[]) {
@@ -51,8 +74,8 @@ class GroupWaitingList extends React.Component<Props,{}>{
                                 <td className="text-center">{data[obj].address}</td>
                                 <td className="text-center">
                                 <ButtonToolbar className="text-center">
-                                    <Button variant="info" size="sm"><i className="far fa-check-circle"/></Button>
-                                    <Button variant="danger" size="sm"><i className="far fa-times-circle"/></Button>
+                                    <Button variant="info" size="sm" name={data[obj].userId} onClick={this.handleOnAccept}><i className="far fa-check-circle"/></Button>
+                                    <Button variant="danger" size="sm" name={data[obj].userId} onClick={this.handleOnReject}><i className="far fa-times-circle"/></Button>
                                 </ButtonToolbar>
                                 </td>
                             </tr>
@@ -83,7 +106,7 @@ class GroupWaitingList extends React.Component<Props,{}>{
 
     public render(){
 
-        const tableRows = this.createTable(this.props.groupInfo.members.users);
+        const tableRows = this.createTable(this.props.groupInfo.waitingList.users);
         
         return (
             <React.Fragment>

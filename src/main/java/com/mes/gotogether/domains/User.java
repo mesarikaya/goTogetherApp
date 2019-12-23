@@ -23,7 +23,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Getter
 @Setter
 @CompoundIndexes({
-        @CompoundIndex(name = "user_idx", def = "{'userId' : 1}", unique = true, dropDups = true)
+        @CompoundIndex(name = "user_idx", def = "{'userId' : 1}")
 })
 public class User {
 

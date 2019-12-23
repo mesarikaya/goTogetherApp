@@ -8,7 +8,8 @@ const initialState: {users: GroupUser[]} = {
 export function updateGroupWaitingListReducer(
     state = initialState,
     action: UpdateGroupWaitingListActionType): {users: GroupUser[]} {
-
+    // tslint:disable-next-line:no-console
+    console.log('Inside UPDATE_GROUP_MEMBER_REDUCER, PAYLOAD IS: ', action);
     switch (action.type) {
 
         case UPDATE_GROUP_WAITINGLIST_REQUEST:

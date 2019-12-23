@@ -61,7 +61,13 @@ public interface GroupService {
 
     Mono<Group> saveOrUpdate(Group group);
     Mono<Group> saveFakeGroup(Group group);
-
+    
+    Mono<Group> deleteUserFromWaitingList(ObjectId id, String userId);
+    Mono<Group> addUserToWaitingList(ObjectId id, String userId);
+    
+    Mono<Group> deleteUserFromInvitesList(ObjectId id, String userId);
+    Mono<Group> addUserToInvitesList(ObjectId id, String userId);
+    
     Mono<Void> deleteById(ObjectId id);
     Mono<Void> deleteAll();
 
