@@ -22,10 +22,11 @@ public final class GroupSearchResponse {
 	private final GroupDetails groupDetails;
 	private final Members members;
                     private final WaitingList waitingList;
+                    private final InvitationList invitationList;
 	
 	public GroupSearchResponse(Group group) {
 		
-                             log.info("*******CONVERTING TO GROUP RESPONSE******");
+                            log.info("*******CONVERTING TO GROUP RESPONSE******");
                             Objects.requireNonNull(group);
                             Objects.requireNonNull(group.getOriginAddress());
                             Objects.requireNonNull(group.getDestinationAddress());
@@ -48,6 +49,13 @@ public final class GroupSearchResponse {
                                                                                                                                                     member.getUserId(),
                                                                                                                                                     member.getAddress().toString()))
                                                                                                                                            .collect(toCollection(HashSet::new)));
+                            this.invitationList = new InvitationList(group.getInvites().stream()
+                                                                                                                        .map( member -> new User(member.getId(), 
+                                                                                                                                  member.getFirstName() + " " + member.getLastName(), 
+                                                                                                                                group.getOwners().contains(member), 
+                                                                                                                                member.getUserId(),
+                                                                                                                                member.getAddress().toString()))
+                                                                                                                        .collect(toCollection(HashSet::new)));
 
                             log.info("Created member is: " + this.members);
 	}
@@ -75,6 +83,13 @@ public final class GroupSearchResponse {
                     @AllArgsConstructor
 	@ToString
 	private static class WaitingList {
+                                private final HashSet<User> users;
+	}
+                
+                    @Getter
+                    @AllArgsConstructor
+	@ToString
+	private static class InvitationList {
                                 private final HashSet<User> users;
 	}
 	

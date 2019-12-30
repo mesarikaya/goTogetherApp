@@ -1,42 +1,33 @@
 import axios from "axios";
 axios.defaults.withCredentials = true; // to make use of jwt
 import { Dispatch } from "redux";
-import { GroupSearchActionType }from '../types/action/groupSearchActionType';
-import { GroupSearchFormFields } from 'src/redux/types/userInterface/groupSearchFormFields';
-import { GroupSearchResult } from '../types/userInterface/groupSearchResult';
+import { GroupSearchResult } from '../../types/userInterface/groupSearchResult';
+import { GroupSearchActionType } from '../../types/action/groupSearchActionType';
 
 // Set the API url for back end calls
 const url = process.env.REACT_APP_NODE_ENV === 'production' ? "/api/v1/" : "http://localhost:8080/api/v1/";
 
-/**
- * Make GET request and dipatch the image data to be shown via redux  
- * @param e HTML Form Event
- * @param formFields Login form input data
- */
-export function SearchGroups(event: React.FormEvent<HTMLFormElement> | null, 
-                             formFields: GroupSearchFormFields,
-                             existingGroups: GroupSearchResult[],
-                             page: number,
-                             token: string) {
+ /**
+  * Make GET request and dipatch the image data to be shown via redux 
+  * @param event HTML Form Event
+  * @param existingGroups Login form input data
+  * @param groupId relevant group id
+  * @param token securiy jwt token
+  */
+export function updateGroup(event: React.MouseEvent<HTMLButtonElement> | null, 
+                            existingGroups: GroupSearchResult[],
+                            groupId: string,
+                            token: string) {
     
     if (event !== null) { 
         event.preventDefault();
-        page = 0; 
     }
-
-    // Set data to send with Post request
-    const data = formFields;
-    const params = new URLSearchParams();
-    const quantity = 9;
-    params.append('origin', data.origin);
-    params.append('destination', data.destination);
-    params.append('originRange', data.originRange.toString());
-    params.append('destinationRange', data.destinationRange.toString());
-    params.append('page', page.toString());
-    params.append('size', quantity.toString());
     
+    // Set data to send with Post request
+    const params = new URLSearchParams();
+    params.append('groupId', groupId);
     return ((dispatch: Dispatch<GroupSearchActionType>) => {
-        return (axios.get(`${url}groups`, {
+        return (axios.delete(`${url}groups`, {
             headers: {
                 Authorization: "Bearer " + token,
                 Accept: 'application/json',
@@ -47,52 +38,51 @@ export function SearchGroups(event: React.FormEvent<HTMLFormElement> | null,
             withCredentials: true
         }).then((response) => {
             
-            const initialState: {groups: GroupSearchResult[], page: number} = {
+            const initialState: {groups: GroupSearchResult[], page:number} = {
                 groups: existingGroups,
-                page
+                page: 0
             };
 
             let payload = initialState;
 
-            // tslint:disable-next-line:no-console
-            console.log("SENDING TO THE REDUCER", response);
-
             // Depending on response status, allow or not for login
             if (response.status === 200) {
+                // tslint:disable-next-line:no-console
+                console.log("response is", response.data);
                 if(Array.isArray(response.data) && response.data.length){
                     const newResponseData = response.data;
                     const prevGroups:GroupSearchResult[] = [];
                     for(const key in existingGroups){
                         if (existingGroups.hasOwnProperty(key)){
-                            prevGroups.push(existingGroups[key]);
+                            if(existingGroups[key].id!==groupId){
+                                prevGroups.push(existingGroups[key]);
+                            }
                         }
                     }
-
+                   
                     Object.keys(newResponseData)
                           .map((key) => (prevGroups.push(newResponseData[key])));
-    
                     payload ={
                         groups: JSON.parse(JSON.stringify(prevGroups)),
-                        page: ++page,
+                        page: 0
                     }; 
                 }else{
-                    // tslint:disable-next-line:no-console
-                    console.log("setting page to 0");
-                    payload ={
+                    payload={
                         groups: existingGroups,
-                        page: 0,
+                        page: 0
                     }; 
                 }
-                
-                dispatch({ type: 'UPDATE_GROUP_RESULTS', payload });         
+                dispatch({ type: 'UPDATE_GROUP_RESULTS', payload });        
             }else {
                 // TODO: CREATE ERROR HANDLERS
+                // tslint:disable-next-line:no-console
+                console.log("Error in axios");
                 dispatch({ type: 'UPDATE_GROUP_RESULTS', payload });
             }
             // TODO: PUT THE RIGHT type for error inside the catch
         })
         .catch((error: any) => {
-            // TODO: CREATE ERROR HANDLERS
+            // handle error
             // tslint:disable-next-line:no-console
             console.log("Error in get is:", error.response );
             throw (error);

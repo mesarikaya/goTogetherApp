@@ -1,20 +1,22 @@
 import * as React from 'react';
 
 // Import types
-import { UserSearchResult } from 'src/redux/types/userInterface/userSearchResult';
+import { UserSearchResult } from '../../../redux/types/userInterface/userSearchResult';
 
 // Styling imports
 import { Card, Button, Table } from 'react-bootstrap';
 import '../../../stylesheets/css/cards/groupCard.css';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { UpdateWaitingList } from 'src/redux/actions/UpdateWaitingList';
-import { GroupSearchResult } from 'src/redux/types/userInterface/groupSearchResult';
+import { GroupSearchResult } from '../../../redux/types/userInterface/groupSearchResult';
+import { updateInvitationsList } from '../../../redux/actions/GroupPage/updateInvitationsListAction';
 
 interface Props {
     groupInfo: GroupSearchResult;
     userList: UserSearchResult[];
     token: string;
-    onInviteUser: typeof UpdateWaitingList;
+    isUserInGroup: boolean;
+    isUserOwnerInGroup :boolean;
+    onInviteUser: typeof updateInvitationsList;
 }
 
 // These props are provided by the router
@@ -23,7 +25,6 @@ interface PathProps {
     location: any;
     match: any;
 }
-
 
 class UserTableList extends React.Component<Props & RouteComponentProps < PathProps >>{
 
@@ -35,8 +36,6 @@ class UserTableList extends React.Component<Props & RouteComponentProps < PathPr
 
     public createTable(data: UserSearchResult[]) {
 
-        // tslint:disable-next-line: no-console
-        console.log("Loading the data", data);
         const rows = [];
         for (const obj in data) {
             if (data.hasOwnProperty(obj)) {
@@ -46,7 +45,8 @@ class UserTableList extends React.Component<Props & RouteComponentProps < PathPr
                       <td className="text-center">{data[obj].surname}</td>
                       <td className="text-center">{data[obj].userName}</td>
                       <td className="text-center">{data[obj].address}</td>
-                      <td className="text-center"><Button variant="info" size="sm" name={data[obj].userName} onClick={this.handleOnInviteUser}>Invite</Button></td>
+                      {this.props.isUserInGroup ? <td className="text-center"><Button variant="info" size="sm" name={data[obj].userName} 
+                      onClick={this.handleOnInviteUser}>Invite</Button></td> : <td />}
                     </tr>
                 );
             }
@@ -55,9 +55,7 @@ class UserTableList extends React.Component<Props & RouteComponentProps < PathPr
         return rows;
     }
 
-    
     public handleOnInviteUser = async (event: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
-
         event.preventDefault();
         const userId = event.currentTarget.getAttribute('name');
         const groupId = this.props.groupInfo.id;

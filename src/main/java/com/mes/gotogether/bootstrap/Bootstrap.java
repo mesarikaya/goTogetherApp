@@ -193,7 +193,7 @@ public class Bootstrap implements CommandLineRunner {
               log.info("Bootstrap data is already available!");
           }*/
        
-         /*
+        /* 
         // Delete current database
         groupService.deleteAll().block();
         addressService.deleteAll().block();
@@ -285,7 +285,8 @@ public class Bootstrap implements CommandLineRunner {
                     group.setOwners(ownersInGroup);
                     HashSet<User> membershipRequests = new HashSet<>();
                     group.setMembershipRequests(membershipRequests);
-                    // Add the group to the hash map of group names
+                    HashSet<User> invitations = new HashSet<>();
+                    group.setInvites(invitations);
                     groupNamesMap.put(gr.getName(), group);
                 }
         }
@@ -344,24 +345,6 @@ public class Bootstrap implements CommandLineRunner {
                      
                 // Add user to the group owners set
                 int random = new Random().nextInt(1)+0;
-                
-               // Add user to the group membership set
-                if(group.getMembershipRequests().size()>0) {
-                    if (!group.getMembershipRequests().contains(user) & random<=0.2) {
-                        group.getMembershipRequests().add(user);
-                    }
-                } else{
-                        group.getMembershipRequests().add(user);
-                }
-                
-                // Add user to the group members invitations set
-                if(group.getInvites().size()>0) {
-                    if (!group.getInvites().contains(user) & random<=0.2) {
-                        group.getInvites().add(user);
-                    }
-                } else{
-                        group.getInvites().add(user);
-                }
                 
                 if(group.getOwners().size()>0){
                     if (!group.getOwners().contains(user) & random<=1) {

@@ -7,6 +7,7 @@ import { UpdateAuth } from '../redux/actions/jwtAuthAction';
 // Import the presentational components for this container
 import App from './components/Page/App';
 import GroupPage from './components/Page/GroupPage/GroupPage';
+import UserPage from './components/Page/UserPage/UserPage';
 
 // Import store and relevant types
 import {store} from "../redux/store";
@@ -15,11 +16,12 @@ import { GroupSearchResult } from 'src/redux/types/userInterface/groupSearchResu
 import { UserSearchResult } from 'src/redux/types/userInterface/userSearchResult';
 import { GroupUser } from 'src/redux/types/userInterface/groupUser';
 
-
-
 interface AppProps {
-    updateSession: typeof UpdateAuth,
-    system: SecurityState,
+    system: SecurityState;
+    userAccount: {
+        subscribedGroups: GroupSearchResult[],
+        invitationList: GroupSearchResult[]
+    };
     groupSearchResults: {
         groups: GroupSearchResult[],
         page: number
@@ -28,12 +30,27 @@ interface AppProps {
         users: UserSearchResult[],
         page: number
     };
+    selectedGroup:{
+        members:{
+            users: GroupUser[]
+        },
+        waitingList: {
+            users: GroupUser[]
+        },
+        invites: {
+            users: GroupUser[]
+        }
+    };
     currentSelectedMembers: {
         users: GroupUser[]
     };
     currentWaitingList: {
         users: GroupUser[]
     };
+    currentInvitationsList: {
+        users: GroupUser[]
+    };
+    updateSession: typeof UpdateAuth;
 }
 
 // These props are provided by the router
@@ -44,6 +61,10 @@ interface PathProps {
 }
 export interface State {
     system: SecurityState;
+    userAccount: {
+        subscribedGroups: GroupSearchResult[],
+        invitationList: GroupSearchResult[]
+    },
     groupSearchResults: {
         groups: GroupSearchResult[],
         page: number
@@ -52,10 +73,24 @@ export interface State {
         users: UserSearchResult[],
         page: number
     };
+    selectedGroup:{
+        members:{
+            users: GroupUser[]
+        },
+        waitingList: {
+            users: GroupUser[]
+        },
+        invites: {
+            users: GroupUser[]
+        }
+    };
     currentSelectedMembers: {
         users: GroupUser[]
     };
     currentWaitingList: {
+        users: GroupUser[]
+    };    
+    currentInvitationsList: {
         users: GroupUser[]
     };
 };
@@ -73,28 +108,14 @@ class Container extends React.Component<AppProps & RouteComponentProps<PathProps
 
         this.state = {
             system: currentState.system,
+            userAccount: currentState.userAccount,
             groupSearchResults: currentState.groupSearchResults,
             userSearchResults: currentState.userSearchResults,
+            selectedGroup: currentState.selectedGroupUser,
             currentSelectedMembers: currentState.currentSelectedMembers,
-            currentWaitingList: currentState.currentWaitingList
+            currentWaitingList: currentState.currentWaitingList,
+            currentInvitationsList: currentState.currentInvitationsList
         };
-    }
-
-    public componentDidUpdate(oldProps: AppProps) { 
-        const newProps = this.props;
-        if(oldProps.system !== newProps.system 
-            || oldProps.groupSearchResults !== newProps.groupSearchResults 
-            || oldProps.userSearchResults !== newProps.userSearchResults
-            || oldProps.currentSelectedMembers !== newProps.currentSelectedMembers
-            || oldProps.currentWaitingList !== newProps.currentWaitingList) {
-            this.setState({ 
-                system:this.props.system,
-                groupSearchResults:this.props.groupSearchResults,
-                userSearchResults:this.props.userSearchResults,
-                currentSelectedMembers:this.props.currentSelectedMembers,
-                currentWaitingList: this.props.currentWaitingList
-            });
-        }
     }
 
     public render() {
@@ -103,6 +124,7 @@ class Container extends React.Component<AppProps & RouteComponentProps<PathProps
             <Switch>
                 <Route exact={true} path="/" component={App}/>
                 <Route path="/group" component={GroupPage} />
+                <Route path="/user" component={UserPage} />
                 <Route path="/**" component={App} />
             </Switch>
         );
@@ -114,10 +136,13 @@ const mapStateToProps = (
     OwnProps: AppProps & RouteComponentProps<PathProps>
     ) => ({
     system: state.system,
+    userAccout: state.userAccount,
     groupSearchResults: state.groupSearchResults,
     userSearchResults: state.userSearchResults,
+    selectedGroup: state.selectedGroup,
     currentSelectedMembers: state.currentSelectedMembers,
-    currentWaitingList: state.currentWaitingList
+    currentWaitingList: state.currentWaitingList,
+    currentInvitationsList: state.currentInvitationsList
 })  
 
 export default withRouter(connect(mapStateToProps, null)(Container));

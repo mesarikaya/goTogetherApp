@@ -1,5 +1,5 @@
-import { UpdateGroupWaitingListActionType, UPDATE_GROUP_WAITINGLIST_REQUEST } from '../types/action/updateGroupWaitingListActionType';
-import { GroupUser } from '../types/userInterface/groupUser';
+import { GroupUser } from '../../types/userInterface/groupUser';
+import { UpdateGroupWaitingListActionType, UPDATE_GROUP_WAITINGLIST_REQUEST } from '../../../redux/types/action/GroupPage/updateGroupWaitingListActionType';
 
 // Set initial state
 const initialState: {users: GroupUser[]} = {

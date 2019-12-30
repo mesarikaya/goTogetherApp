@@ -17,7 +17,7 @@ export interface Props {
     formFields: GroupSearchFormFields;
     page: number;
     token: string;
-    onSubmit: typeof SearchGroups| typeof SearchUsers;
+    onSubmit: typeof SearchGroups | typeof SearchUsers;
     updateSearchFormFields: (formFields: GroupSearchFormFields) => void;
 };
 
@@ -71,9 +71,6 @@ class GroupSearchForm extends React.Component<Props, State> {
         
         // MAKE AN AJAX CALL
         this.props.onSubmit(event, this.props.formFields, [], this.props.page, this.props.token);
-        
-        
-
         // TODO: VALIDATE ON THE REST CONTROLLER AND RETURN ERROR OR THE SEARCH STATUS AND SAVE COOKIE
     };
 

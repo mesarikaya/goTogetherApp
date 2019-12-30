@@ -15,10 +15,15 @@ export interface StoreState {
         page: number
     };
     groupSearchFormFields: GroupSearchFormFields;
+    selectedGroup: GroupSearchResult;
     currentSelectedMembers: {
         users: GroupUser[]
     };
     currentWaitingList: {
         users: GroupUser[]
+    };
+    userAccount: {
+        subscribedGroups: GroupSearchResult[],
+        invitationList: GroupSearchResult[]
     };
 }

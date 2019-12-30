@@ -1,13 +1,13 @@
 import { GroupSearchResult } from '../userInterface/groupSearchResult';
 
-export const SEARCH_GROUP_REQUEST = 'SEARCH_GROUP_REQUEST';
+export const UPDATE_GROUP_RESULTS = 'UPDATE_GROUP_RESULTS';
 
-interface SearchGroupRequest {
-    type: typeof SEARCH_GROUP_REQUEST
+interface UpdateGroupResultsRequest {
+    type: typeof UPDATE_GROUP_RESULTS
     payload: {
         groups: GroupSearchResult[],
         page: number
     }
 }
 
-export type GroupSearchActionType = SearchGroupRequest;
+export type GroupSearchActionType = UpdateGroupResultsRequest;

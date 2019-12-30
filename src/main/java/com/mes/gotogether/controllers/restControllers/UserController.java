@@ -1,6 +1,8 @@
 package com.mes.gotogether.controllers.restControllers;
 
+import com.mes.gotogether.domains.Group;
 import com.mes.gotogether.domains.User;
+import com.mes.gotogether.domains.responses.GroupSearchResponse;
 import com.mes.gotogether.domains.responses.UserSearchResponse;
 import com.mes.gotogether.security.jwt.JWTUtil;
 import com.mes.gotogether.security.service.SecurityUserLibraryUserDetailsService;
@@ -8,6 +10,7 @@ import com.mes.gotogether.services.domain.GroupService;
 import com.mes.gotogether.services.domain.UserService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -66,5 +69,17 @@ public class UserController {
                                                          group.getMembers().stream().forEach(user -> response.add(new UserSearchResponse(user)));
                                                         return response;
                                                      });
+    }
+    
+    @GetMapping("/user")
+    @ResponseStatus(HttpStatus.OK)
+    public Flux<GroupSearchResponse> getUserMembershipInfo(@RequestParam("userId") String userId){
+        
+        Predicate<User> isUser = user -> user.getUserId().equals(userId);
+        Predicate<Group> isMemberOrInvited = (group) -> group.getMembers().stream().anyMatch(isUser) || group.getInvites().stream().anyMatch(isUser);
+        
+        return groupService.findAll()
+                                         .filter(isMemberOrInvited)
+                                         .map(group -> new GroupSearchResponse(group));
     }
 }

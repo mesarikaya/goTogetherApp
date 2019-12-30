@@ -21,8 +21,9 @@ import GroupCard from '../Cards/GroupCard';
 import { GroupSearchFormFields } from '../../../redux/types/userInterface/groupSearchFormFields';
 import { store } from '../../../redux/store';
 import { SecurityState } from '../../../redux/types/system/securityState';
-import { SearchGroups } from 'src/redux/actions/groupSearchAction';
-import { GroupSearchResult } from 'src/redux/types/userInterface/groupSearchResult';
+import { SearchGroups } from '../../../redux/actions/groupSearchAction';
+import { GroupSearchResult } from '../../../redux/types/userInterface/groupSearchResult';
+import { updateSelectedGroup } from '../../../redux/actions/GroupPage/updateSelectedGroupAction';
 
 export interface Props {
     system: SecurityState;
@@ -33,6 +34,7 @@ export interface Props {
         page: number
     };
     onSubmit: typeof SearchGroups;
+    updateSelectedGroup: typeof updateSelectedGroup;
     updateGroupSearchFormFields: (formFields: GroupSearchFormFields) => void;
 };
 
@@ -151,11 +153,11 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
                                     <p className="joinAGroupSubText text-center">Search with ease based on the origin and destination radius</p>
                                 
                                     <GroupSearchForm 
-                                    formFields={this.state.groupSearchFormFields}
-                                    page={this.props.groupSearchResults.page}
-                                    token={this.state.system.token} 
-                                    updateSearchFormFields={this.handleGroupSearchFormUpdate}
-                                    onSubmit={this.props.onSubmit}
+                                        formFields={this.state.groupSearchFormFields}
+                                        page={this.props.groupSearchResults.page}
+                                        token={this.state.system.token} 
+                                        updateSearchFormFields={this.handleGroupSearchFormUpdate}
+                                        onSubmit={this.props.onSubmit}
                                     />
                                 </div>
                             </div>
@@ -171,12 +173,14 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
                         <CardDeck>
                             {Object.keys(groupSearchResult).map((key) => (
                                 <GroupCard 
-                                key={groupSearchResult[key]} 
-                                groupIndex={key}
-                                name={groupSearchResult[key].name} 
-                                groupDetails={groupSearchResult[key].groupDetails} 
-                                members={groupSearchResult[key].members}
-                                group = {groupSearchResult[key]}
+                                    key={groupSearchResult[key]} 
+                                    groupIndex={key}
+                                    name={groupSearchResult[key].name} 
+                                    groupDetails={groupSearchResult[key].groupDetails}
+                                    members={groupSearchResult[key].members}
+                                    group={groupSearchResult[key]}
+                                    token={this.state.system.token}
+                                    updateSelectedGroup={this.props.updateSelectedGroup}
                                 />
                             ))
                             }
@@ -210,18 +214,13 @@ const mapDispatchToProps = (dispatch: any) => {
             formFields: GroupSearchFormFields,
             existingGroups: GroupSearchResult[],
             page: number,
-            token: string,
-            ) => dispatch(SearchGroups(e, formFields, existingGroups, page, token))
+            token: string) => dispatch(SearchGroups(e, formFields, existingGroups, page, token)),
+        updateSelectedGroup: (
+            event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+            currentGroup: GroupSearchResult,
+            groupId: string,
+            token: string) => dispatch(updateSelectedGroup(event, currentGroup, groupId, token))
     }
 }
-
-/*const mapDispatchToProps = (dispatch: any) => {
-    return {
-        onLoginSubmit: (
-            e: React.FormEvent<HTMLFormElement>, 
-            formFields: LoginFormFields
-            ) => dispatch(UpdateAuth(e, formFields))
-    }
-}*/
 
 export  default withRouter(connect(mapStateToProps, mapDispatchToProps)(App));

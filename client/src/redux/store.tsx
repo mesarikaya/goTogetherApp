@@ -11,9 +11,13 @@ import { GroupSearchResult } from './types/userInterface/groupSearchResult';
 import { GroupSearchActionType } from './types/action/groupSearchActionType';
 import { UserSearchActionType } from './types/action/userSearchActionType';
 import { UserSearchResult } from './types/userInterface/userSearchResult';
-import { DeleteGroupMemberActionType } from './types/action/groupMemberDeleteActionType';
+import { UpdateGroupMemberActionType } from '../redux/types/action/GroupPage/updateGroupMemberActionType';
 import { GroupUser } from './types/userInterface/groupUser';
-import { UpdateGroupWaitingListActionType } from './types/action/updateGroupWaitingListActionType';
+import { UpdateGroupWaitingListActionType } from '../redux/types/action/GroupPage/updateGroupWaitingListActionType';
+import { UserDetailsResult } from '../redux/types/userInterface/userDetailsResult';
+import { UpdateUserAccountActionType } from '../redux/types/action/updateUserAccountActionType';
+import { UpdateGroupInvitationsListActionType } from '../redux/types/action/GroupPage/updateGroupInvitationsListActionType';
+import { UpdateSelectedGroupActionType } from './types/action/GroupPage/updateSelectedGroupActionType';
 
 // Create history
 export const history = createBrowserHistory();
@@ -91,18 +95,52 @@ const currentWaitingList: {users: GroupUser[]} = {
     users: []
 };
 
+const currentInvitationsList: {users: GroupUser[]} = {
+    users: []
+};
+
+const userAccount: UserDetailsResult = {
+    subscribedGroups: [],
+    invitationList: []
+};
+
+const selectedGroup: GroupSearchResult = {
+    id: '',
+    name: '',
+    groupDetails: {
+        originCity: '',
+        originRange: 2,
+        originZipCode: '',
+        destinationCity: '',
+        destinationRange: 2,
+        destinationZipCode: ''
+    },
+    members:{
+        users: []
+    },
+    waitingList: {
+        users: []
+    },
+    invitationList: {
+        users: []
+    }
+};
+
 if (typeof (initialState) === "undefined"){
     initialState = {
         system,
+        userAccount,
         groupSearchResults,
         userSearchResults,
+        selectedGroup,
         currentSelectedMembers,
-        currentWaitingList
+        currentWaitingList,
+        currentInvitationsList
     };
 }
 
 // Create the store with reducer, initial state and middleware
-export const store = createStore<AppState, JwtAuthActionTypes&GroupSearchActionType&UserSearchActionType&DeleteGroupMemberActionType&UpdateGroupWaitingListActionType, any,  any>(
+export const store = createStore<AppState, JwtAuthActionTypes&UpdateSelectedGroupActionType&UpdateUserAccountActionType&GroupSearchActionType&UserSearchActionType&UpdateGroupMemberActionType&UpdateGroupWaitingListActionType&UpdateGroupInvitationsListActionType, any,  any>(
     rootReducer,
     initialState,
     composeWithDevTools(applyMiddleware(myRouterMiddleware, thunk, logger))

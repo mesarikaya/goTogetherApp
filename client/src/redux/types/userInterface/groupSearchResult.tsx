@@ -16,5 +16,8 @@ export interface GroupSearchResult {
     },
     waitingList: {
         users: GroupUser[]
+    },
+    invitationList: {
+        users: GroupUser[]
     }
 }

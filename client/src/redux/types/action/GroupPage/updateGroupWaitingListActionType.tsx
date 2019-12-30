@@ -1,4 +1,4 @@
-import { GroupUser } from '../userInterface/groupUser';
+import { GroupUser } from '../../userInterface/groupUser';
 
 export const UPDATE_GROUP_WAITINGLIST_REQUEST = 'UPDATE_GROUP_WAITINGLIST_REQUEST';
 

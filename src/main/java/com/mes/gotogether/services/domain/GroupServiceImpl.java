@@ -251,17 +251,17 @@ public class GroupServiceImpl implements GroupService{
                                                    .log()
                                                    .flatMap(groupInDb -> {
                                                             group.setId(groupInDb.getId());
-                                                            log.info("Updating the group:");
+                                                            log.debug("Updating the group:");
                                                             return groupRepository.save(group);
                                                    })
                                                    .switchIfEmpty(Mono.defer(() -> {
-                                                            System.out.println("Creating a new Group");
+                                                            log.debug("Creating a new Group");
                                                             return groupRepository.save(group);
                                                    }));
                                             // TODO: ADD ERROR OR SUCCESS HANDLERS*/
         }else{
             // TODO: CREATE ERROR HANDLERS
-            System.out.println("Could not save the GROUP");
+            log.debug("Could not save the GROUP");
             log.debug("A Null group data is entered. Do not process!");
             return Mono.empty();
         }
@@ -279,60 +279,76 @@ public class GroupServiceImpl implements GroupService{
     public Mono<Group> addUserToWaitingList(ObjectId id, String userId){
     
         return userService.findByUserId(userId)
-                           .flatMap(user->{
-                               return this.findById(id)
-                                     .flatMap(group->{
-                                         log.info("Adding user: " + user.getUserId());
-                                         if(!group.getMembershipRequests().contains(user)){ 
-                                            group.getMembershipRequests().add(user);
-                                         }
-                                         log.info("After adding the user the new waiting list: " + group.getMembershipRequests());
-                                         return this.saveOrUpdate(group);
-                               }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
-                           }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
+                                      .flatMap(user->{
+                                           return this.findById(id)
+                                                 .flatMap(group->{
+                                                     if(!group.getMembershipRequests().contains(user)){ 
+                                                        group.getMembershipRequests().add(user);
+                                                     }
+                                                     return this.saveOrUpdate(group);
+                                           }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
+                                       }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
     }
     
     @Override
     public Mono<Group> deleteUserFromWaitingList(ObjectId id, String userId){
     
         return this.findById(id)
-                .flatMap(group -> {
-                             Set<User> membershipRequests = group.getMembershipRequests();
-                             Predicate<User> isUser = user -> user.getUserId().equals(userId);
-                             membershipRequests.removeIf(isUser);
-                             group.setInvites(membershipRequests);
-                             return this.saveOrUpdate(group);
-                 }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
+                         .flatMap(group -> {
+                                     Set<User> membershipRequests = group.getMembershipRequests();
+                                     Predicate<User> isUser = user -> user.getUserId().equals(userId);
+                                     membershipRequests.removeIf(isUser);
+                                     group.setInvites(membershipRequests);
+                                     return this.saveOrUpdate(group);
+                          }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
     }
 
     @Override
     public Mono<Group> addUserToInvitesList(ObjectId id, String userId){
     
         return userService.findByUserId(userId)
-                           .flatMap(user->{
-                               return this.findById(id)
-                                     .flatMap(group->{
-                                         if (!group.getInvites().contains(user)){
-                                            group.getInvites().add(user);
-                                         }
-                                         return this.saveOrUpdate(group);
-                               }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
-                           }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
+                                      .flatMap(user->{
+                                           return this.findById(id)
+                                                 .flatMap(group->{
+                                                     if (!group.getInvites().contains(user)){
+                                                        group.getInvites().add(user);
+                                                     }
+                                                     return this.saveOrUpdate(group);
+                                           }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
+                                       }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
     }
     
     @Override
     public Mono<Group> deleteUserFromInvitesList(ObjectId id, String userId){
     
         return this.findById(id)
-                .flatMap(group -> {
-                             Set<User> membershipRequests = group.getMembershipRequests();
-                             Predicate<User> isUser = user -> user.getUserId().equals(userId);
-                             membershipRequests.removeIf(isUser);
-                             group.setInvites(membershipRequests);
-                             return this.saveOrUpdate(group);
-                 }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
+                         .flatMap(group -> {
+                                     Set<User> invites = group.getInvites();
+                                     Predicate<User> isUser = user -> user.getUserId().equals(userId);
+                                     invites.removeIf(isUser);
+                                     group.setInvites(invites);
+                                     return this.saveOrUpdate(group);
+                          }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
     }
 
+    @Override
+    public Mono<Group> addMemberByUserId(ObjectId id, String userId) {
+              
+        
+        return userService.findByUserId(userId)
+                           .flatMap(user->{
+                               return this.findById(id)
+                                     .flatMap(group->{
+                                         Set<User> members = group.getMembers();
+                                         if (!members.contains(user)){
+                                            members.add(user);
+                                            group.setMembers(members);
+                                         }
+                                         return this.saveOrUpdate(group);
+                               }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
+                           }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
+    }
+    
     @Override
     public Mono<Group> deleteMemberByUserId(ObjectId id, String userId) {
               

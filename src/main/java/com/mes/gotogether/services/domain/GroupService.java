@@ -71,5 +71,6 @@ public interface GroupService {
     Mono<Void> deleteById(ObjectId id);
     Mono<Void> deleteAll();
 
+    Mono<Group> addMemberByUserId(ObjectId id, String userId);
     Mono<Group> deleteMemberByUserId(ObjectId id, String userId);
 }

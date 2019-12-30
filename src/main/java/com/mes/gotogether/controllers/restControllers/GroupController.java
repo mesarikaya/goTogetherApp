@@ -47,68 +47,107 @@ public class GroupController {
 
     @GetMapping("/groups")
     @ResponseStatus(HttpStatus.OK)
-    public Flux<GroupSearchResponse> getGroupsByOriginAndDestinationWithinRadius(@RequestParam("origin") String origin,  @RequestParam("destination") String destination,
-    							           @RequestParam("originRange") double originRadius, @RequestParam("destinationRange") double destRadius,
-                                                                                                                                                        @RequestParam("page") int page, @RequestParam("size") int size)
+    public Flux<GroupSearchResponse> getGroupsByOriginAndDestinationWithinRadius(@RequestParam("origin") String origin,  
+                                                                                                                                                        @RequestParam("destination") String destination,
+    							            @RequestParam("originRange") double originRadius,
+                                                                                                                                                        @RequestParam("destinationRange") double destRadius,
+                                                                                                                                                        @RequestParam("page") int page, 
+                                                                                                                                                        @RequestParam("size") int size)
     {   	
     	return groupService.findGroupsByOriginAndDestinationAddress(origin, destination, 
                                                                                                                                originRadius, destRadius, 
                                                                                                                                PageRequest.of(page, size))
                                                      .log("Source GET GEROUPS")
-                                                      .checkpoint("In get groups")
+                                                     .checkpoint("In get groups")
                                                      .map(group-> new GroupSearchResponse(group));
+    }
+    
+    @GetMapping("/groups/id")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<GroupSearchResponse> getGroupById(@RequestParam("groupId") String groupId){
+        
+        ObjectId id= new ObjectId(groupId);
+        return groupService.findById(id)
+                                        .map(group -> new GroupSearchResponse(group));
+    }
+    
+    @DeleteMapping("/groups")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<Void> deleteGroup(@RequestParam("groupId") String groupId) {   	
+         ObjectId groupIx= new ObjectId(groupId);
+         return groupService.deleteById(groupIx);
+    }
+    
+    @PutMapping("/groups/members")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<GroupSearchResponse> addGroupMember(@RequestBody GroupUser groupUser)
+    {   	
+         ObjectId groupId= new ObjectId(groupUser.getGroupId());
+         String userId = groupUser.getUserId();
+         return groupService.deleteUserFromWaitingList(groupId, userId)
+                                          .flatMap(group -> {
+                                              return groupService.addMemberByUserId(group.getId(), userId)
+                                                                                .flatMap(groupLvl1 -> groupService.deleteUserFromInvitesList(groupLvl1.getId(), userId)
+                                                                                                                                            .map(item->new GroupSearchResponse(item)))
+                                                                               .switchIfEmpty(Mono.defer(() -> Mono.empty()));
+                                          }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
     }
     
     @DeleteMapping("/groups/members")
     @ResponseStatus(HttpStatus.OK)
     public Mono<GroupSearchResponse> deleteGroupMember(@RequestParam("groupId") String groupId,  @RequestParam("userId") String userId)
     {   	
-         log.info("Request is: groupId:" + groupId + " userID: " + userId);
-         log.info("New object ID is: " + new ObjectId(groupId));
-          return groupService.deleteMemberByUserId(new ObjectId(groupId), userId)
-                                           .map(group-> new GroupSearchResponse(group));
+         ObjectId groupIx= new ObjectId(groupId); 
+         return groupService.deleteUserFromWaitingList(groupIx, userId)
+                                          .flatMap(group -> {
+                                              return groupService.deleteMemberByUserId(group.getId(), userId)
+                                                                                .flatMap(groupLvl1 -> groupService.deleteUserFromInvitesList(groupLvl1.getId(), userId)
+                                                                                                                                            .map(item->new GroupSearchResponse(item)))
+                                                                               .switchIfEmpty(Mono.defer(() -> Mono.empty()));
+                                          }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
     }
     
     @PutMapping("/groups/waitingList")
     @ResponseStatus(HttpStatus.OK)
     public Mono<GroupSearchResponse> addToWaitingList(@RequestBody GroupUser groupUser)
-    {   	
-         // TODO: Create implementation for addting user to the group waiting list   
+    {   	 
           return groupService.addUserToWaitingList(new ObjectId(groupUser.getGroupId()), groupUser.getUserId())
                                            .map(group-> new GroupSearchResponse(group));
     }
     
     @DeleteMapping("/groups/waitingList")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<GroupSearchResponse> deleteFromWaitingList(@RequestParam("groupId") String groupId,  @RequestParam("userId") String userId)
-    {   	
-         // TODO: Create implementation for addting user to the group waiting list
+    public Mono<GroupSearchResponse> deleteFromWaitingList(@RequestParam("groupId") String groupId,  
+                                                                                                               @RequestParam("userId") String userId, 
+                                                                                                               @RequestParam("isMember") String isMember) {  
+          ObjectId groupIx= new ObjectId(groupId);
+          if(Boolean.parseBoolean(isMember)) {
+              return groupService.deleteUserFromWaitingList(groupIx, userId)
+                                               .flatMap(group -> {
+                                                   return groupService.addMemberByUserId(group.getId(), userId)
+                                                                                    .map(groupItem->new GroupSearchResponse(groupItem))
+                                                                                    .switchIfEmpty(Mono.defer(() -> Mono.empty()));
+                                               }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
+          }
+          
           return groupService.deleteUserFromWaitingList(new ObjectId(groupId), userId)
                                            .map(group-> new GroupSearchResponse(group));
     }
     
-    @DeleteMapping("/groups/invitesList")
+    @DeleteMapping("/groups/invitationsList")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<GroupSearchResponse> deleteFromInviteList(@RequestBody GroupUser groupUser)
+    public Mono<GroupSearchResponse> deleteFromInviteList(@RequestParam("groupId") String groupId,  
+                                                                                                           @RequestParam("userId") String userId)
     {   	
-         log.info("Request is: groupId:" + groupUser.getGroupId() + " userID: " + groupUser.getUserId());
-         log.info("New object ID is: " + new ObjectId(groupUser.getGroupId()));
-         // TODO: Create implementation for addting user to the group waiting list
-          return groupService.deleteUserFromWaitingList(new ObjectId(groupUser.getGroupId()), groupUser.getUserId())
+          return groupService.deleteUserFromInvitesList(new ObjectId(groupId), userId)
                                            .map(group-> new GroupSearchResponse(group));
     }
     
-    @PutMapping("/groups/invitesList")
+    @PutMapping("/groups/invitationsList")
     @ResponseStatus(HttpStatus.OK)
     public Mono<GroupSearchResponse> addToInvitesList(@RequestBody GroupUser groupUser)
     {   	
-         log.info("Request is: groupId:" + groupUser.getGroupId() + " userID: " + groupUser.getUserId());
-         log.info("New object ID is: " + new ObjectId(groupUser.getGroupId()));
-         // TODO: Create implementation for addting user to the group waiting list   
-          return groupService.addUserToWaitingList(new ObjectId(groupUser.getGroupId()), groupUser.getUserId())
+          return groupService.addUserToInvitesList(new ObjectId(groupUser.getGroupId()), groupUser.getUserId())
                                            .map(group-> new GroupSearchResponse(group));
     }
-    
-
-    
 }
