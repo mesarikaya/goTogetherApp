@@ -3,7 +3,6 @@ package com.mes.gotogether.bootstrap;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,8 +24,7 @@ public class UserDTO {
     private String email;
     @JsonProperty("Password")
     private String password;
-
-
+    
     @Override
     public String toString() {
         return "Generated UserDTO{" +

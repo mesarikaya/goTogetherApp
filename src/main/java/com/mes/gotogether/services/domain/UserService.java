@@ -15,4 +15,5 @@ public interface UserService {
     Mono<Void> deleteUserById(ObjectId id);
     Mono<Void> deleteByUserId(String userId);
     Mono<Void> deleteAll();
+    Mono<User> renewVerificationDetails(String userId);
 }

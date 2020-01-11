@@ -1,12 +1,10 @@
 import { combineReducers } from 'redux';
 import { loginReducer } from './jwtAuthReducer';
-import { updateGroupResultsReducer } from './updateGroupResultsReducer';
 import { userSearchReducer } from './userSearchReducer';
-import { groupDeleteMemberReducer } from './GroupPage/updateGroupMemberReducer';
-import { updateGroupWaitingListReducer } from './GroupPage/updateGroupWaitingListReducer';
 import { updateUserAccountReducer } from './UserPage/updateUserAccountReducer';
-import { updateGroupInvitationsListReducer } from './GroupPage/updateGroupInvitationsListReducer';
 import { updateSelectedGroupReducer } from './GroupPage/updateSelectedGroupReducer';
+import { updateGroupResultsReducer } from './updateGroupResultsReducer';
+import { updateResponseStatusReducer } from './updateResponseStatusReducer';
 
 export const rootReducer = combineReducers({
     system: loginReducer,
@@ -14,9 +12,7 @@ export const rootReducer = combineReducers({
     groupSearchResults: updateGroupResultsReducer,
     userSearchResults: userSearchReducer,
     selectedGroup: updateSelectedGroupReducer,
-    currentSelectedMembers: groupDeleteMemberReducer,
-    currentWaitingList: updateGroupWaitingListReducer,
-    currentInvitationsList: updateGroupInvitationsListReducer
+    responseStatus: updateResponseStatusReducer
 });
 
 export type AppState = ReturnType<typeof rootReducer>

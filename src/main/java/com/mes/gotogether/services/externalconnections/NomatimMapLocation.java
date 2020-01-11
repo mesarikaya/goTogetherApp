@@ -20,8 +20,7 @@ public final class NomatimMapLocation implements GeoLocationService{
 	private static final String jsonResultFormat = "?format=json&addressdetails=1&limit=1";  
 	
 	public NomatimMapLocation(RestTemplate restTemplate) {
-		
-		this.restTemplate = restTemplate;
+                        this.restTemplate = restTemplate;
 	}
 	
 	@Override
@@ -57,31 +56,33 @@ public final class NomatimMapLocation implements GeoLocationService{
 	}
 
 	private NomatimOpenStreetMapQuery[] getQueryResult(String searchAddress){
-		
-		NomatimOpenStreetMapQuery[] defaultResult = {};
-		NomatimOpenStreetMapQuery[] queryResult = Optional.ofNullable(restTemplate.getForObject(
-                                                                                                                                                          searchAddress,
-                                                                                                                                                          NomatimOpenStreetMapQuery[].class))
-                                                                                                                                                          .orElse(defaultResult);
-		
-		return queryResult;
+
+                            NomatimOpenStreetMapQuery[] defaultResult = {};
+                            NomatimOpenStreetMapQuery[] queryResult = Optional.ofNullable(restTemplate.getForObject(
+                                                                                                                                                                      searchAddress,
+                                                                                                                                                                      NomatimOpenStreetMapQuery[].class))
+                                                                                                                                                                      .orElse(defaultResult);
+
+                            return queryResult;
 	}
 	
 	private String setGeoLocationSearchAddress(String... params) {
 		
-    	return Arrays.stream(params)
-		 .filter(p -> p!=null)
-		 .collect(Collectors.joining());
-    }
+                        return Arrays.stream(params)
+                                              .filter(p -> p!=null)
+                                             .collect(Collectors.joining());
+                    }
 	
 	private Optional<Double[]> returnResultAsOptional(NomatimOpenStreetMapQuery[] queryResult) {
 		
-		log.info("Nomatiom query result is successful");
-		Objects.requireNonNull(queryResult);
-		if (queryResult.length>0)
-			return Optional.of(new Double[]{queryResult[0].getLatitude(), queryResult[0].getLongitude()});
-		else
-			log.info("Nomatim query result is empty. Therefore returning empty optional");
-			return Optional.empty();
+                        log.info("Nomatiom query result is successful");
+                        Objects.requireNonNull(queryResult);
+                        if (queryResult.length>0){
+                            return Optional.of(new Double[]{queryResult[0].getLatitude(), queryResult[0].getLongitude()});
+                         }
+                        else{
+                            log.info("Nomatim query result is empty. Therefore returning empty optional");
+                            return Optional.empty();
+                        }
 	}
 }

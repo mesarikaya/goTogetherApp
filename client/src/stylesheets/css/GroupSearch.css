@@ -1,6 +1,7 @@
-.input-group {
-    height: 5rem;
+.searchFormInputGroup {
+    height: 5rem !important;
 }
+
 .form-group {
     margin-bottom: 0rem !important;
     padding: 0rem !important;

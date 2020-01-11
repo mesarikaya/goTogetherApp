@@ -46,40 +46,41 @@ export function SearchGroups(event: React.FormEvent<HTMLFormElement> | null,
             params,
             withCredentials: true
         }).then((response) => {
-            
-            const initialState: {groups: GroupSearchResult[], page: number} = {
-                groups: existingGroups,
-                page
+
+            let initialState: {groups: GroupSearchResult[], page: number} = {
+                groups: [],
+                page: 0
             };
 
-            let payload = initialState;
+            if (event === null) { 
+                initialState = {
+                    groups: existingGroups,
+                    page
+                }; 
+            }
 
-            // tslint:disable-next-line:no-console
-            console.log("SENDING TO THE REDUCER", response);
+            let payload = initialState;
 
             // Depending on response status, allow or not for login
             if (response.status === 200) {
                 if(Array.isArray(response.data) && response.data.length){
                     const newResponseData = response.data;
                     const prevGroups:GroupSearchResult[] = [];
-                    for(const key in existingGroups){
-                        if (existingGroups.hasOwnProperty(key)){
-                            prevGroups.push(existingGroups[key]);
+                    for(const key in initialState.groups){
+                        if (initialState.groups.hasOwnProperty(key)){
+                            prevGroups.push(initialState.groups[key]);
                         }
                     }
 
                     Object.keys(newResponseData)
                           .map((key) => (prevGroups.push(newResponseData[key])));
-    
                     payload ={
                         groups: JSON.parse(JSON.stringify(prevGroups)),
                         page: ++page,
                     }; 
                 }else{
-                    // tslint:disable-next-line:no-console
-                    console.log("setting page to 0");
                     payload ={
-                        groups: existingGroups,
+                        groups: initialState.groups,
                         page: 0,
                     }; 
                 }

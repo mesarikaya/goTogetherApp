@@ -1,9 +1,10 @@
 package com.mes.gotogether.domains;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
@@ -46,7 +47,7 @@ public class User {
     private String lastLogin;
     private boolean isVerified;
     private String verificationToken;
-    private Date verificationExpiresAt;
+    private LocalDateTime verificationExpiresAt;
     private boolean isActive;
     private List<Role> roles;
     
@@ -68,6 +69,8 @@ public class User {
         this.userId = email.split("@")[0] + oauthId;
         this.password = password;
         this.roles = roles;
+        this.verificationToken = UUID.randomUUID().toString();
+        this.verificationExpiresAt = LocalDateTime.now().plusMinutes(10);
     }
 
     public void setEmail(String email) {

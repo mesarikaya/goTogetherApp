@@ -24,8 +24,6 @@ class InputRange extends React.Component<Props> {
   }
 
   public handleInputChange = async (event: any): Promise<void> => {
-    // tslint:disable-next-line: no-console
-    console.log("Event details:", Number(event.currentTarget.value));
     const enteredRange = this.setRange(Number(event.target.value));
     this.props.onChangeValue(this.props.name, enteredRange);
   }

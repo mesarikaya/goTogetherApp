@@ -1,5 +1,5 @@
 .modalDialog{
-    max-width: 350px;
+    max-width: 375px;
 }
 
 .modal-content  {
@@ -9,7 +9,7 @@
 }
 
 .modalContainer{
-    max-width: 250px;
+    max-width: 340px;
 }
 
 .modalHeader {
@@ -27,6 +27,20 @@
     color: #ee6561;
     font-weight: bold;
 }
+#loginOrRegistertab {
+    background: #ff9494;
+}
+
+#loginOrRegisterTab-tab-login, #loginOrRegisterTab-tab-register, #loginOrRegisterTab-tab-contact {
+    color: #0aeaad;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.loginFormContainer{
+    padding-right: 15px !important;
+    padding-left: 15px !important;
+}
 
 .rememberMeText, .helpText {
     font-size: 0.6rem;
@@ -40,20 +54,30 @@
     border-bottom-right-radius: 8rem;
 }
 
-.input-group-text{
-    background-color: #4de8d4;
-    width: 2.85em;
-}
-
 .input-group>.input-group-append:not(:last-child)>.input-group-text{
     border-top-right-radius: 8rem;
     border-bottom-right-radius: 8rem;
 }
 
-.submitButton{
+.LoginFormInputGroup{
+    height: 3rem;
+}
+
+.input-group-text{
+    background-color: #4de8d4;
+    height: 2.4rem;
+}
+
+.submitButton, .submitButton:focus, .submitButton:hover, .submitButton:active{
     border-radius: 2rem;
     background-color: rgba(7, 212, 124, 0.69);
     border-color: rgba(7, 212, 124, 0.69);
+}
+
+.disabledSubmitButton, .disabledSubmitButton:hover, .disabledSubmitButton:focus{
+    border-radius: 2rem;
+    background-color: rgba(196, 230, 224, 0.856);
+    border-color: rgba(196, 230, 224, 0.856);
 }
 
 /* SWITCH CHECKBOXES STYLES */
@@ -61,12 +85,13 @@
 /* No more blue blur border */
 input {
     outline: none;
+    height: 2.5rem;
 }
 
 /* base styles */
 input[type="checkbox"] {
-    height: 20px;
-    width: 20px;
+    height: 5px;
+    width: 5px;
     vertical-align: middle;
     margin: 0 0.4em 0.4em 0;
     background: rgba(255, 255, 255, 1);

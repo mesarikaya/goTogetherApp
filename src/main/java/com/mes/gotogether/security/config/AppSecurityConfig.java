@@ -88,6 +88,8 @@ public class AppSecurityConfig {
             .pathMatchers("/login**").permitAll()
             .pathMatchers("/auth**").permitAll()
             .pathMatchers("/api/auth/login**").permitAll()
+            .pathMatchers("/api/auth/register**").permitAll()
+            .pathMatchers("/api/auth/verify**").permitAll()
             .pathMatchers("/api/v1/groups**").permitAll()
             .anyExchange().authenticated()
             .and();

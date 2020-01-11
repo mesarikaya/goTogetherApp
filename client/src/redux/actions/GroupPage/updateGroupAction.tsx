@@ -47,8 +47,6 @@ export function updateGroup(event: React.MouseEvent<HTMLButtonElement> | null,
 
             // Depending on response status, allow or not for login
             if (response.status === 200) {
-                // tslint:disable-next-line:no-console
-                console.log("response is", response.data);
                 if(Array.isArray(response.data) && response.data.length){
                     const newResponseData = response.data;
                     const prevGroups:GroupSearchResult[] = [];

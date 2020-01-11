@@ -20,17 +20,11 @@ public final class UserSearchResponse {
             private final String address;
             
             public UserSearchResponse(User user){
-                            log.info("*******CONVERTING TO USER RESPONSE******");
                             Objects.requireNonNull(user);
                             this.firstName = user.getFirstName();
                             this.middleName = user.getMiddleName();
                             this.surname = user.getLastName();
                             this.userName = user.getUserId();
                             this.address = user.getAddress().toString();
-                            log.info("Created User is: " + this);
             }
-    
-    
-    
-    
 }

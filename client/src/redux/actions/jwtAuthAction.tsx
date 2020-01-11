@@ -16,15 +16,8 @@ export function UpdateAuth(event: React.FormEvent<HTMLFormElement>, formFields: 
     
     if (event !== null) { event.preventDefault(); }
 
-    // tslint:disable-next-line:no-console
-    console.log('REDUX UPDATE AUTH ACTION IS IN PROGRESS', 'Requesting: ', event);
-
-    // tslint:disable-next-line:no-console
-    console.log('environment is', process.env.NODE_ENV);
-
     // Set data to send with Post request
     const data = formFields;
-
     return ((dispatch: Dispatch<JwtAuthActionTypes>) => {
         return (axios.post(`${url}login`, data, { 
             headers: {
@@ -43,14 +36,9 @@ export function UpdateAuth(event: React.FormEvent<HTMLFormElement>, formFields: 
                 token: ''
              };
 
-            // tslint:disable-next-line:no-console
-            console.log("SENDING TO THE REDUCER", response);
-
             // Depending on response status, allow or not for login
             if (response.status === 200) {
-                
-                // tslint:disable-next-line: no-console
-                console.log("Response data is: " + response.data)
+
                 payload = {
                     cookie: "authenticated cookie",
                     loggedIn: true,
@@ -58,8 +46,6 @@ export function UpdateAuth(event: React.FormEvent<HTMLFormElement>, formFields: 
                     token: response.data.token
                 };
 
-                // tslint:disable-next-line:no-console
-                console.log("SENDING TO THE REDUCER");
                 dispatch({ type: 'SEND_LOGIN_REQUEST', payload });
             }
             else {

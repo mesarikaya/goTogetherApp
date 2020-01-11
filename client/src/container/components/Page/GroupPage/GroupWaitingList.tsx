@@ -24,7 +24,6 @@ export interface Props {
 
 class GroupWaitingList extends React.Component<Props,{}>{
 
-
     constructor(props:Props){
         super(props);
         this.handleOnAccept=this.handleOnAccept.bind(this);
@@ -52,10 +51,7 @@ class GroupWaitingList extends React.Component<Props,{}>{
 
     public createTable(data: GroupUser[]) {
 
-        // tslint:disable-next-line: no-console
-        console.log("Loading the data", data);
         const rows = [];
-
         for (const obj in data) {
             if (data.hasOwnProperty(obj)) {
                 if(this.props.isUserInGroup){

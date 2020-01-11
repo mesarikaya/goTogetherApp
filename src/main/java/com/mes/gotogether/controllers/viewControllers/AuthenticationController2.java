@@ -18,14 +18,14 @@ import reactor.core.publisher.Mono;
 
 @Controller
 @RequestMapping(path = "/", produces = { MediaType.APPLICATION_JSON_UTF8_VALUE })
-public class AuthenticationController {
+public class AuthenticationController2 {
 
     private JWTUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private SecurityUserLibraryUserDetailsService securityUserService;
 
     @Autowired
-    public AuthenticationController(JWTUtil jwtUtil, PasswordEncoder passwordEncoder,
+    public AuthenticationController2(JWTUtil jwtUtil, PasswordEncoder passwordEncoder,
                                     SecurityUserLibraryUserDetailsService securityUserService) {
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;

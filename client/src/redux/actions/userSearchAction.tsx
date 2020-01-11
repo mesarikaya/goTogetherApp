@@ -24,10 +24,6 @@ export function SearchUsers(event: React.FormEvent<HTMLFormElement> | null,
         page = 0; 
     }
     
-    // tslint:disable-next-line:no-console
-    console.log('REDUX SEARCH GROUP ACTION IS IN PROGRESS', 'Requesting: ', event);
-    // tslint:disable-next-line:no-console
-    console.log('Page number is: ', page);
     // Set data to send with Post request
     const data = formFields;
     const params = new URLSearchParams();
@@ -54,18 +50,22 @@ export function SearchUsers(event: React.FormEvent<HTMLFormElement> | null,
             withCredentials: true
         }).then((response) => {
             
-            const initialState: {users: UserSearchResult[], page: number} = {
+
+            let initialState: {users: UserSearchResult[], page: number} = {
                 users: existingUsers,
-                page
+                page: 0
             };
 
+            if (event === null) { 
+                initialState = {
+                    users: existingUsers,
+                    page
+                }; 
+            }
+
             let payload = initialState;
-            // tslint:disable-next-line:no-console
-            console.log("SENDING TO THE USER SEARCH REDUCER", response);
             // Depending on response status, allow or not for login
             if (response.status === 200) {
-                // tslint:disable-next-line:no-console
-                console.log("response is", response.data);
                 if(Array.isArray(response.data) && response.data.length){
                     const newResponse = response.data;
                     // Flatten the userlist response
@@ -79,43 +79,29 @@ export function SearchUsers(event: React.FormEvent<HTMLFormElement> | null,
                             }
                         }
                     }
-
-                    // tslint:disable-next-line:no-console
-                    console.log("New flattened data for the user", newResponseData);
                     
                     const prevUsers: UserSearchResult[] = [];
-                    for(const key in existingUsers){
-                        if (existingUsers.hasOwnProperty(key)){
-                            prevUsers.push(existingUsers[key]);
+                    for(const key in initialState.users){
+                        if (initialState.users.hasOwnProperty(key)){
+                            prevUsers.push(initialState.users[key]);
                         }
                     }
-                    // tslint:disable-next-line: no-console
-                    console.log("New response is: ", newResponseData);
-                    
-                    // tslint:disable-next-line: no-console
-                    console.log("Existing group: ", prevUsers);
     
                     Object.keys(newResponseData)
                           .map((key) => (prevUsers.push(newResponseData[key])));
     
-                    // tslint:disable-next-line: no-console
-                    console.log("Final group: ", prevUsers);
                     payload ={
                         users: JSON.parse(JSON.stringify(prevUsers)),
                         page: ++page,
                     }; 
                 }else{
-                    // tslint:disable-next-line:no-console
-                    console.log("setting page to 0");
                     payload ={
                         users: existingUsers,
                         page: 0,
                     }; 
                 }
-                                
-                // tslint:disable-next-line:no-console
-                console.log("SENDING TO THE REDUCER");
-                dispatch({ type: 'SEARCH_USER_REQUEST', payload })         
+                
+                dispatch({ type: 'SEARCH_USER_REQUEST', payload });       
             }else {
                 // TODO: CREATE ERROR HANDLERS
                 // tslint:disable-next-line:no-console

@@ -62,8 +62,6 @@ function executeResponse(currentGroup: GroupSearchResult,
 
     const initialState: GroupSearchResult = currentGroup;
     let payload = initialState;
-
-    // Depending on response status, allow or not for login
     if (response.status === 200) {
         const responseData = response.data;
         if(responseData){ 

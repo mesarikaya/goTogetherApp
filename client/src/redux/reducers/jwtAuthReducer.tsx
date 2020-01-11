@@ -15,10 +15,6 @@ export function loginReducer(state = initialState, action: JwtAuthActionTypes): 
     switch (action.type) {
 
         case SEND_LOGIN_REQUEST:
-
-            // tslint:disable-next-line:no-console
-            console.log('Inside SEND_LOGIN_REQUEST REDUCER, PAYLOAD IS: ', action.payload);
-
             return Object.assign({}, state, {
                 cookie: action.payload.cookie,
                 loggedIn: action.payload.loggedIn,

@@ -11,10 +11,8 @@ import '../../../../stylesheets/css/cards/GroupPage.css';
 
 // Import store and types
 import { store } from 'src/redux/store';
-import { StoreState } from 'src/redux/types/storeState';
 import NavigationBar from '../../Navigation/NavigationBar';
 import { LoginFormFields } from 'src/redux/types/userInterface/loginFormFields';
-import { isNullOrUndefined } from 'util';
 import GroupMemberTable from './GroupMemberTable';
 import { GroupUser } from '../../../../redux/types/userInterface/groupUser';
 import GroupWaitingList from './GroupWaitingList';
@@ -28,25 +26,35 @@ import UserTableList from '../../Tables/UserTableList';
 import { updateGroupMember } from '../../../../redux/actions/GroupPage/updateGroupMemberAction';
 import { updateWaitingList } from '../../../../redux/actions/GroupPage/updateWaitingListAction';
 import { updateGroup } from '../../../../redux/actions/GroupPage/updateGroupAction';
-import { updateInvitationsList } from 'src/redux/actions/GroupPage/updateInvitationsListAction';
+import { updateInvitationsList } from '../../../../redux/actions/GroupPage/updateInvitationsListAction';
+import { updateUserAccount } from '../../../../redux/actions/UserPage/updateUserAccountAction';
+import { UpdateAuth } from '../../../../redux/actions/jwtAuthAction';
+import { RegistrationFormFields } from 'src/redux/types/userInterface/registrationFormFields';
+import { registerAccount } from 'src/redux/actions/registerAccountAction';
+import { AppState } from 'src/redux/reducers/rootReducer';
 
 /** CREATE Prop and State interfaces to use in the component */
 // Set the default Props
 export interface GroupProps{
-    groupInfo:GroupSearchResult;
+    isLoading: boolean;
+    groupInfo: GroupSearchResult;
     userSearchFormFields: GroupSearchFormFields;
     loginFormFields: LoginFormFields;
+    registrationFormFields: RegistrationFormFields;
+    onLoginSubmit: typeof UpdateAuth;
+    onRegistrationSubmit: typeof registerAccount;
     onSubmit: typeof SearchUsers;
     onUpdateMember: typeof updateGroupMember;
     onUpdateWaitingList: typeof updateWaitingList;
     onUpdateInvitationsList: typeof updateInvitationsList;
     onGroupDelete: typeof updateGroup;
+    onGetUserAccountDetails: typeof updateUserAccount;
 }
 
 export interface GroupState{
     groupInfo: GroupSearchResult;
     userSearchFormFields: GroupSearchFormFields;
-    storeState: StoreState;
+    storeState: AppState;
     isUserInGroup: boolean;
     isUserOwnerInGroup: boolean;
 }
@@ -65,10 +73,8 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathPro
     constructor(props: GroupProps& RouteComponentProps<PathProps>){
 
         super(props);
-        const currAppState:StoreState = store.getState();
+        const currAppState:AppState = store.getState();
         const selectedGroup:GroupSearchResult = currAppState.selectedGroup; 
-        // tslint:disable-next-line: no-console
-        console.log("Inside componentDidUpdate for GroupPage", selectedGroup);
         
         this.state = {
             groupInfo: selectedGroup,
@@ -90,54 +96,15 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathPro
         this.handleGroupDeleteRequest = this.handleGroupDeleteRequest.bind(this);
     }
 
-    // TODO: REMOVE this - not needed after app_state cache
-    public getMembersFromLocalStorage(){
-        const localStorageSelectedGroup = window.localStorage.getItem('app_state');
-        let selectedGroup:GroupSearchResult= {
-            id: '',
-            name: '',
-            groupDetails: {
-                originCity: '',
-                originZipCode: '',
-                originRange: 2,
-                destinationCity: '',
-                destinationZipCode: '',
-                destinationRange: 2 
-            },
-            members: {
-                users: []
-            },
-            waitingList:{
-                users: []
-            },
-            invitationList:{
-                users: []
-            }
-        };
-
-        if (!isNullOrUndefined(localStorageSelectedGroup)){
-            selectedGroup = JSON.parse(localStorageSelectedGroup).selectedGroup;
-        }
-
-        return selectedGroup;
-    }
-
     public componentDidUpdate(oldProps: GroupProps& RouteComponentProps < PathProps >) {
-        
-        // tslint:disable-next-line: no-console
-        console.log("Inside componentDidUpdate for GroupPage", store.getState());
         
         const currAppState = store.getState();
         const selectedGroup:GroupSearchResult = currAppState.selectedGroup;
         const newProps = this.props;
-
         // tslint:disable-next-line: no-console
-        console.log("ComponentUpdate groups info props:", this.state.groupInfo);
-
+        console.log(oldProps.groupInfo !== newProps.groupInfo, "and ", this.state.storeState !== currAppState);
         if(oldProps.groupInfo !== newProps.groupInfo 
-            || this.state.storeState !== currAppState
-            || this.state.storeState.currentSelectedMembers !== currAppState.currentSelectedMembers
-            || this.state.storeState.currentWaitingList !== currAppState.currentWaitingList) {
+            || this.state.storeState !== currAppState) {
             this.setState({ 
                 groupInfo: selectedGroup,
                 storeState: currAppState,
@@ -145,7 +112,6 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathPro
                 isUserOwnerInGroup: this.isOwnerInGroup(selectedGroup.members.users)
             });
         }
-        
     }
 
     public isUserInGroup(data:GroupUser[]) {
@@ -173,14 +139,9 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathPro
     }
 
     public handleJoinRequest = async (event: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
-        
         event.preventDefault();
         const userId = event.currentTarget.getAttribute('name');
         const groupId = this.state.groupInfo.id;
-
-        // tslint:disable-next-line: no-console
-        console.log("Join request parameters:",event, this.state.groupInfo, 
-        groupId, userId, this.state.storeState.system.token, 'add');
         if(userId && groupId){
             this.props.onUpdateWaitingList(event, this.state.groupInfo, 
                 groupId, userId, this.state.storeState.system.token, 'add', false);
@@ -208,8 +169,14 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathPro
         const userSearchResult = this.state.storeState.userSearchResults.users;
         return (
             <div className="GroupPage">
-                <NavigationBar loginFormFields={this.props.loginFormFields} />
-                <div className="container px-0 mx-auto">
+                <NavigationBar storeState={this.state.storeState}
+                               loginFormFields={this.props.loginFormFields}
+                               registrationFormFields={this.props.registrationFormFields}
+                               onLoginSubmit={this.props.onLoginSubmit}
+                               onRegistrationSubmit={this.props.onRegistrationSubmit}
+                               onGetUserAccountDetails={this.props.onGetUserAccountDetails}
+                />
+                <div className="container px-0 mx-auto pageContainer">
                     <h2 className="text-center">                                
                         {this.state.groupInfo.name}: 
                         <span>
@@ -284,7 +251,7 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathPro
 // Create mapToState and mapDispatch for Redux
 const mapStateToProps = (
     state: GroupState, 
-    OwnProps: GroupProps & RouteComponentProps<PathProps>
+    OwnProps: GroupProps&RouteComponentProps<PathProps>
     ) => {
     return {
         groupInfo: state.groupInfo,
@@ -295,6 +262,14 @@ const mapStateToProps = (
 // TODO: Add user search dispatch
 const mapDispatchToProps = (dispatch: any) => {
     return {
+        onLoginSubmit: (
+            e: React.FormEvent<HTMLFormElement>, 
+            formFields: LoginFormFields
+        ) => dispatch(UpdateAuth(e, formFields)),
+        onRegistrationSubmit: (
+            e: React.FormEvent<HTMLFormElement>, 
+            formFields: RegistrationFormFields
+        ) => dispatch(registerAccount(e, formFields)),
         onSubmit: (
             e: React.FormEvent<HTMLFormElement>, 
             formFields: GroupSearchFormFields,
@@ -332,7 +307,12 @@ const mapDispatchToProps = (dispatch: any) => {
             currentGroups: GroupSearchResult[],
             groupId: string,
             token: string,
-        ) => dispatch(updateGroup(e, currentGroups, groupId, token))
+        ) => dispatch(updateGroup(e, currentGroups, groupId, token)),
+        onGetUserAccountDetails: (
+            event: React.MouseEvent<HTMLButtonElement> | null,
+            userId: string,
+            token: string
+        ) => dispatch(updateUserAccount(event, userId, token))
     }
 }
 

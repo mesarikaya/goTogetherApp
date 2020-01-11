@@ -2,8 +2,6 @@ import axios from "axios";
 axios.defaults.withCredentials = true; // to make use of jwt
 import { Dispatch } from "redux";
 import { GroupSearchResult } from '../../types/userInterface/groupSearchResult';
-import { GroupUser } from '../../types/userInterface/groupUser';
-import { UpdateGroupMemberActionType } from '../../types/action/GroupPage/updateGroupMemberActionType';
 import { UpdateSelectedGroupActionType } from 'src/redux/types/action/GroupPage/updateSelectedGroupActionType';
 
 // Set the API url for back end calls
@@ -29,7 +27,7 @@ export function updateWaitingList(event: React.MouseEvent<HTMLButtonElement>,
         event.preventDefault();
     }
 
-    return ((dispatch: Dispatch<UpdateSelectedGroupActionType>&Dispatch<UpdateGroupMemberActionType>) => {
+    return ((dispatch: Dispatch<UpdateSelectedGroupActionType>) => {
 
         if(actionType==='add'){
             addToList(currentGroup, groupId, userId, token, dispatch);
@@ -43,14 +41,12 @@ function addToList(currentGroup: GroupSearchResult,
                    groupId: string,
                    userId: string,
                    token: string,
-                   dispatch: Dispatch<UpdateSelectedGroupActionType>&Dispatch<UpdateGroupMemberActionType>) {
+                   dispatch: Dispatch<UpdateSelectedGroupActionType>) {
 
     const data = {
         userId,
         groupId
     };
-    // tslint:disable-next-line: no-console
-    console.log("INSIDE DISPATCH FOR ADD", token);
     return (axios.put(`${url}groups/waitingList`, 
                 data, 
                 {headers: {
@@ -76,7 +72,7 @@ function deleteFromList(currentGroup: GroupSearchResult,
                         groupId: string,
                         userId: string,
                         token: string, 
-                        dispatch: Dispatch<UpdateSelectedGroupActionType>&Dispatch<UpdateGroupMemberActionType>,
+                        dispatch: Dispatch<UpdateSelectedGroupActionType>,
                         addToMemberList: true|false) {
 
     const params = new URLSearchParams();
@@ -110,12 +106,11 @@ function deleteFromList(currentGroup: GroupSearchResult,
 
 function executeResponse(currentGroup: GroupSearchResult, 
                          response: any, 
-                         dispatch: Dispatch<UpdateSelectedGroupActionType>&Dispatch<UpdateGroupMemberActionType>,
+                         dispatch: Dispatch<UpdateSelectedGroupActionType>,
                          addToMemberList: true|false){
 
     const initialState: GroupSearchResult = currentGroup;
     let payload = initialState;
-
     // Depending on response status, allow or not for login
     if (response.status === 200) {
         const responseData = response.data;
@@ -124,13 +119,7 @@ function executeResponse(currentGroup: GroupSearchResult,
         }else{
             payload = responseData
         }
-        dispatch({ type: 'UPDATE_SELECTED_GROUP_REQUEST', payload });
-        if(addToMemberList){
-            // tslint:disable-next-line: no-console
-            console.log("Sending member list update request");
-            const payloads: {users: GroupUser[]} = {users: currentGroup.members.users};
-            dispatch({type: 'UPDATE_GROUP_MEMBER_REQUEST', payloads });
-        }      
+        dispatch({ type: 'UPDATE_SELECTED_GROUP_REQUEST', payload });    
     }else {
         // TODO: CREATE ERROR HANDLERS
         // tslint:disable-next-line:no-console

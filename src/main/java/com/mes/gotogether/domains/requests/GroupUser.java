@@ -10,7 +10,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class GroupUser {
+public final class GroupUser {
 
     @NotNull
     private String groupId;

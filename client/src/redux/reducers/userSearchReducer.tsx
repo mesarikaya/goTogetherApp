@@ -13,9 +13,6 @@ export function userSearchReducer(
 
     switch (action.type) {
         case SEARCH_USER_REQUEST:
-            // tslint:disable-next-line:no-console
-            console.log('Inside SEARCH_GROUP_REQUEST REDUCER, PAYLOAD IS: ', action.payload);
-
             return Object.assign({}, 
                                  state, 
                                  {

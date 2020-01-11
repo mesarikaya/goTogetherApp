@@ -3,6 +3,7 @@ axios.defaults.withCredentials = true; // to make use of jwt
 import { Dispatch } from "redux";
 import { GroupSearchResult } from '../../types/userInterface/groupSearchResult';
 import { UpdateUserAccountActionType } from '../../types/action/updateUserAccountActionType';
+import { UserDetailsResult } from 'src/redux/types/userInterface/userDetailsResult';
 
 // Set the API url for back end calls
 const url = process.env.REACT_APP_NODE_ENV === 'production' ? "/api/v1/" : "http://localhost:8080/api/v1/";
@@ -13,7 +14,6 @@ const url = process.env.REACT_APP_NODE_ENV === 'production' ? "/api/v1/" : "http
  * @param formFields Login form input data
  */
 export function updateUserAccount(event: React.MouseEvent<HTMLButtonElement> | null, 
-                                  existingGroups: GroupSearchResult[],
                                   userId: string,
                                   token: string) {
     
@@ -36,47 +36,51 @@ export function updateUserAccount(event: React.MouseEvent<HTMLButtonElement> | n
             withCredentials: true
         }).then((response) => {
             
-            const initialState: {subscribedGroups: GroupSearchResult[], invitationList: GroupSearchResult[]} = {
+            const initialState: UserDetailsResult = {
                 subscribedGroups: [],
                 invitationList: []
             };
 
             let payload = initialState;
-
             const subscribedGroups:GroupSearchResult[] = [];
             const invitationList:GroupSearchResult[] = [];
-            // Depending on response status, allow or not for login
             if (response.status === 200) {
-                // tslint:disable-next-line:no-console
-                console.log("User Account response is", response.data);
                 if(Array.isArray(response.data) && response.data.length){
-
-                    const newResponseData:GroupSearchResult[] = response.data;      
+                    const newResponseData:GroupSearchResult[] = response.data;
                     Object.keys(newResponseData)
                           .map((key) => {
-                                return Object.keys(newResponseData[key].members.users).map((key2) => {
-                                    let obj = newResponseData[key].members.users[key2];
+                                Object.keys(newResponseData[key].members.users).map((key2) => {
+                                    const obj = newResponseData[key].members.users[key2];
                                     if (obj && !(Object.keys(obj).length === 0 && obj.constructor === Object)){
                                         if(obj.userId===userId){
+                                            // tslint:disable-next-line: no-console
+                                            console.log("add to subscription: " +  subscribedGroups + "-" + key);
                                             subscribedGroups.push(newResponseData[key]);
                                         }
                                     }
+                                });
 
-                                    obj = newResponseData[key].invitationList.users[key2];
+                                Object.keys(newResponseData[key].invitationList.users).map((key2) => {
+                                    const obj = newResponseData[key].invitationList.users[key2];
                                     if (obj && !(Object.keys(obj).length === 0 && obj.constructor === Object)){
                                         if(obj.userId===userId){
+                                            // tslint:disable-next-line: no-console
+                                            console.log("add to subscription: " +  invitationList + "-" + key);
                                             invitationList.push(newResponseData[key]);
                                         }
                                     }
-
-                                    return true;
                                 });
-                          });
 
-                    payload ={
+                                return true;
+                            });
+
+                    payload={
                         subscribedGroups: JSON.parse(JSON.stringify(subscribedGroups)),
                         invitationList: JSON.parse(JSON.stringify(invitationList))
                     };
+
+                    // tslint:disable-next-line: no-console
+                    console.log("Payload of user account is: " + payload);
                 }else{
                     payload = initialState;
                 }

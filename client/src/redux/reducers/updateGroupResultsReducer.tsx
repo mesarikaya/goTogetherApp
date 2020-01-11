@@ -14,10 +14,6 @@ export function updateGroupResultsReducer(
     switch (action.type) {
 
         case UPDATE_GROUP_RESULTS:
-
-            // tslint:disable-next-line:no-console
-            console.log('Inside SEARCH_GROUP_REQUEST REDUCER, PAYLOAD IS: ', action.payload);
-
             return Object.assign({}, 
                                  state, 
                                  {

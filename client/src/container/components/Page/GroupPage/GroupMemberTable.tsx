@@ -30,10 +30,7 @@ class GroupMemberTable extends React.Component<Props,{}>{
 
     public createTable(data: GroupUser[]) {
 
-        // tslint:disable-next-line: no-console
-        console.log("Loading the data", data);
         const rows = [];
-
         for (const obj in data) {
             if (data.hasOwnProperty(obj)) {
                 if(this.props.isUserInGroup){

@@ -2,8 +2,7 @@ import axios from "axios";
 axios.defaults.withCredentials = true; // to make use of jwt
 import { Dispatch } from "redux";
 import { GroupSearchResult } from '../../types/userInterface/groupSearchResult';
-import { GroupUser } from '../../types/userInterface/groupUser';
-import { UpdateGroupMemberActionType } from '../../../redux/types/action/GroupPage/updateGroupMemberActionType';
+import { UpdateSelectedGroupActionType } from 'src/redux/types/action/GroupPage/updateSelectedGroupActionType';
 
 // Set the API url for back end calls
 const url = process.env.REACT_APP_NODE_ENV === 'production' ? "/api/v1/" : "http://localhost:8080/api/v1/";
@@ -28,7 +27,7 @@ export function updateGroupMember(event: React.MouseEvent<HTMLButtonElement> | n
         event.preventDefault();
     }
     
-    return ((dispatch: Dispatch<UpdateGroupMemberActionType>) => { 
+    return ((dispatch: Dispatch<UpdateSelectedGroupActionType>) => { 
         if (actionType === 'add'){
             addMember(currentGroup, groupId, userId, token, dispatch);
         }else if (actionType === 'delete'){
@@ -41,7 +40,7 @@ function addMember(currentGroup: GroupSearchResult,
                    groupId: string, 
                    userId: string, 
                    token: string, 
-                   dispatch: Dispatch<UpdateGroupMemberActionType>){
+                   dispatch: Dispatch<UpdateSelectedGroupActionType>){
     
     const data = {
         groupId,
@@ -72,7 +71,7 @@ function deleteMember(currentGroup: GroupSearchResult,
                       groupId: string, 
                       userId: string, 
                       token: string, 
-                      dispatch: Dispatch<UpdateGroupMemberActionType>){
+                      dispatch: Dispatch<UpdateSelectedGroupActionType>){
     
     const params = new URLSearchParams();
     params.append('groupId', groupId);
@@ -101,26 +100,26 @@ function deleteMember(currentGroup: GroupSearchResult,
 
 function executeResponse(currentGroup: GroupSearchResult, 
                          response: any, 
-                         dispatch: Dispatch<UpdateGroupMemberActionType>){
+                         dispatch: Dispatch<UpdateSelectedGroupActionType>){
 
-    const initialState: {users: GroupUser[]} = {users: currentGroup.members.users};
-    let payloads = initialState;
+    const initialState: GroupSearchResult = currentGroup;
+    let payload = initialState;
 
     // Depending on response status, allow or not for login
     if (response.status === 200) {
         const responseData = response.data;
         if(responseData){ 
-            payloads = {users : responseData.members.users}; 
+            payload = responseData; 
         }else{
-            payloads = {users: currentGroup.members.users}; 
+            payload = responseData; 
         }
         
-        dispatch({ type: 'UPDATE_GROUP_MEMBER_REQUEST', payloads });      
+        dispatch({ type: 'UPDATE_SELECTED_GROUP_REQUEST', payload });      
     }else {
         // TODO: CREATE ERROR HANDLERS
         // tslint:disable-next-line:no-console
         console.log("Error in axios");
-        dispatch({ type: 'UPDATE_GROUP_MEMBER_REQUEST', payloads });
+        dispatch({ type: 'UPDATE_SELECTED_GROUP_REQUEST', payload });
     }
 
 }

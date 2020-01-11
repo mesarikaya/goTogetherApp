@@ -46,8 +46,7 @@ function addToList(currentGroup: GroupSearchResult,
         userId,
         groupId
     };
-    // tslint:disable-next-line: no-console
-    console.log("INSIDE DISPATCH FOR ADD", token);
+
     return (axios.put(`${url}groups/invitationsList`, 
                 data, 
                 {headers: {

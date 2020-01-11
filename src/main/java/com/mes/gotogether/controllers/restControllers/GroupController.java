@@ -9,6 +9,8 @@ import com.mes.gotogether.services.domain.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -52,11 +54,12 @@ public class GroupController {
     							            @RequestParam("originRange") double originRadius,
                                                                                                                                                         @RequestParam("destinationRange") double destRadius,
                                                                                                                                                         @RequestParam("page") int page, 
-                                                                                                                                                        @RequestParam("size") int size)
-    {   	
+                                                                                                                                                        @RequestParam("size") int size) {
+        
+                    Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "id");        
     	return groupService.findGroupsByOriginAndDestinationAddress(origin, destination, 
                                                                                                                                originRadius, destRadius, 
-                                                                                                                               PageRequest.of(page, size))
+                                                                                                                               pageable)
                                                      .log("Source GET GEROUPS")
                                                      .checkpoint("In get groups")
                                                      .map(group-> new GroupSearchResponse(group));
@@ -74,6 +77,7 @@ public class GroupController {
     @DeleteMapping("/groups")
     @ResponseStatus(HttpStatus.OK)
     public Mono<Void> deleteGroup(@RequestParam("groupId") String groupId) {   	
+         
          ObjectId groupIx= new ObjectId(groupId);
          return groupService.deleteById(groupIx);
     }
@@ -84,6 +88,7 @@ public class GroupController {
     {   	
          ObjectId groupId= new ObjectId(groupUser.getGroupId());
          String userId = groupUser.getUserId();
+         
          return groupService.deleteUserFromWaitingList(groupId, userId)
                                           .flatMap(group -> {
                                               return groupService.addMemberByUserId(group.getId(), userId)

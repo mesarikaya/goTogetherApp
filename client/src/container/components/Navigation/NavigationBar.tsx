@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Button } from 'react-bootstrap';
 import { LoginFormFields } from '../../../redux/types/userInterface/loginFormFields';
-import LoginButton from '../Buttons/LoginButton';
+import LoginOrRegister from '../Buttons/LoginOrRegister';
 import Logo from '../../../../src/stylesheets/images/logo.svg';
 
 // Add styling related imports
@@ -10,8 +10,20 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
 import '../../../stylesheets/css/NavBar.css';
 
+// Add types
+import { updateUserAccount } from '../../../redux/actions/UserPage/updateUserAccountAction';
+import { UpdateAuth } from '../../../redux/actions/jwtAuthAction';
+import { RegistrationFormFields } from 'src/redux/types/userInterface/registrationFormFields';
+import { registerAccount } from 'src/redux/actions/registerAccountAction';
+import { AppState } from 'src/redux/reducers/rootReducer';
+
 export interface Props {
+    storeState: AppState
     loginFormFields: LoginFormFields;
+    registrationFormFields: RegistrationFormFields;
+    onGetUserAccountDetails: typeof updateUserAccount;
+    onLoginSubmit: typeof UpdateAuth;
+    onRegistrationSubmit: typeof registerAccount;
 };
 
 class NavigationBar extends React.Component<Props> {
@@ -41,7 +53,13 @@ class NavigationBar extends React.Component<Props> {
                             </div>
                             
                             <div className="col-12 col-sm-7 navButtonGroup">
-                                <LoginButton loginFormFields={this.props.loginFormFields}/>
+                                <LoginOrRegister storeState={this.props.storeState}
+                                                 loginFormFields={this.props.loginFormFields}
+                                                 registrationFormFields={this.props.registrationFormFields}
+                                                 onLoginSubmit={this.props.onLoginSubmit}
+                                                 onRegistrationSubmit={this.props.onRegistrationSubmit}
+                                                 onGetUserAccountDetails={this.props.onGetUserAccountDetails}
+                                />
                                 <Button className="navButton signOutButton" variant="link">
                                     <i className="fas fa-sign-out-alt">
                                         <strong id="icons"> Sign out</strong>

@@ -2,10 +2,13 @@ package com.mes.gotogether.services.domain;
 
 import com.mes.gotogether.domains.User;
 import com.mes.gotogether.repositories.domain.UserRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,9 +49,10 @@ public class UserServiceImpl implements UserService {
         if (ObjectUtils.isEmpty(userId)) {
             return Mono.empty();
         }
-
+        
+        Sort sort = new Sort(Sort.Direction.ASC, "id"); 
         // Check if user exists
-        return userRepository.findByUserId(userId);
+        return userRepository.findByUserId(userId, sort);
     }
 
     @Override
@@ -69,18 +73,20 @@ public class UserServiceImpl implements UserService {
             log.debug("REQUESTING SAVE OR UPDATE with  user: " + user);
             // Check if the user exists (By email and oauthId)
             // Check if user exists, if so, update. Otherwise create
-            return userRepository.findByUserId(user.getUserId())
-                    .flatMap(userInDb -> {
-                        log.debug("user in db is: " + userInDb);
-                        log.debug("Update the user");
-                        user.setId(userInDb.getId());
-                        log.debug("USER in repository: " + userInDb);
-                        return userRepository.save(user);
-                    })
-                    .switchIfEmpty(Mono.defer(() -> {
-                        log.debug("Creating a new User 2");
-                        return this.createUser(user);
-                    }));
+            Sort sort = new Sort(Sort.Direction.ASC, "id"); 
+            return userRepository.findByUserId(user.getUserId(), sort)
+                                                .flatMap(userInDb -> {
+                                                    log.debug("user in db is: " + userInDb);
+                                                    log.info("Update the user");
+                                                    user.setId(userInDb.getId());
+                                                    log.info("USER in repository: " + user);
+                                                    return userRepository.save(user);
+                                                })
+                                                .switchIfEmpty(Mono.defer(() -> {
+                                                    log.info("Creating a new User");
+                                                    log.info("USER in repository: " + user);
+                                                    return this.createUser(user);
+                                                }));
 
             // TODO: CREATE SUCCESS HANDLER AND CONNECT ON SUCCSES CASE
             // TODO: CREATE AN ERROR HANDLER AND CONNECT ON ERROR CASE
@@ -117,4 +123,22 @@ public class UserServiceImpl implements UserService {
     public Mono<Void> deleteAll() {
         return userRepository.deleteAll();
     }
+
+    @Override
+    public Mono<User> renewVerificationDetails(String userId) {
+        
+        String verificationToken = UUID.randomUUID().toString();
+        LocalDateTime verificationTokenExpiresAt = LocalDateTime.now().plusMinutes(10);
+        Sort sort = new Sort(Sort.Direction.ASC, "id"); 
+        return userRepository.findByUserId(userId, sort)
+                                            .flatMap( u -> {
+                                                u.setVerificationToken(verificationToken);
+                                                u.setVerificationExpiresAt(verificationTokenExpiresAt);
+                                                u.setVerified(false);
+                                                return this.saveOrUpdateUser(u);
+                                            });
+
+    }
+    
+    
 }

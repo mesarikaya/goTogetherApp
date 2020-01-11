@@ -29,8 +29,6 @@ export function updateSelectedGroupReducer(
 
     switch (action.type) {
         case UPDATE_SELECTED_GROUP_REQUEST:
-            // tslint:disable-next-line:no-console
-            console.log('Inside DELETE_GROUP_MEMBER_REDUCER, PAYLOAD IS: ', action.payload);
             return Object.assign({}, 
                 state, 
                 {

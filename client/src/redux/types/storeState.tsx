@@ -3,9 +3,12 @@ import { GroupSearchResult } from './userInterface/groupSearchResult';
 import { GroupSearchFormFields } from './userInterface/groupSearchFormFields';
 import { UserSearchResult } from './userInterface/userSearchResult';
 import { GroupUser } from './userInterface/groupUser';
+import { UserDetailsResult } from './userInterface/userDetailsResult';
+import ResponseStatus from './userInterface/responseStatus';
 
 export interface StoreState {
     system: SecurityState;
+    userAccount: UserDetailsResult;
     groupSearchResults: {
         groups: GroupSearchResult[],
         page: number
@@ -22,8 +25,5 @@ export interface StoreState {
     currentWaitingList: {
         users: GroupUser[]
     };
-    userAccount: {
-        subscribedGroups: GroupSearchResult[],
-        invitationList: GroupSearchResult[]
-    };
+    responseStatus: ResponseStatus;
 }

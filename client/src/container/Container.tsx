@@ -2,7 +2,6 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from "react-router";
 import { Route, Switch, withRouter } from 'react-router-dom';
-import { UpdateAuth } from '../redux/actions/jwtAuthAction';
 
 // Import the presentational components for this container
 import App from './components/Page/App';
@@ -15,13 +14,12 @@ import { SecurityState } from '../redux/types/system/securityState';
 import { GroupSearchResult } from 'src/redux/types/userInterface/groupSearchResult';
 import { UserSearchResult } from 'src/redux/types/userInterface/userSearchResult';
 import { GroupUser } from 'src/redux/types/userInterface/groupUser';
+import { UserDetailsResult } from 'src/redux/types/userInterface/userDetailsResult';
+import ResponseStatus from 'src/redux/types/userInterface/responseStatus';
 
 interface AppProps {
     system: SecurityState;
-    userAccount: {
-        subscribedGroups: GroupSearchResult[],
-        invitationList: GroupSearchResult[]
-    };
+    userAccount: UserDetailsResult;
     groupSearchResults: {
         groups: GroupSearchResult[],
         page: number
@@ -41,16 +39,7 @@ interface AppProps {
             users: GroupUser[]
         }
     };
-    currentSelectedMembers: {
-        users: GroupUser[]
-    };
-    currentWaitingList: {
-        users: GroupUser[]
-    };
-    currentInvitationsList: {
-        users: GroupUser[]
-    };
-    updateSession: typeof UpdateAuth;
+    responseStatus: ResponseStatus;
 }
 
 // These props are provided by the router
@@ -61,10 +50,7 @@ interface PathProps {
 }
 export interface State {
     system: SecurityState;
-    userAccount: {
-        subscribedGroups: GroupSearchResult[],
-        invitationList: GroupSearchResult[]
-    },
+    userAccount: UserDetailsResult,
     groupSearchResults: {
         groups: GroupSearchResult[],
         page: number
@@ -73,26 +59,8 @@ export interface State {
         users: UserSearchResult[],
         page: number
     };
-    selectedGroup:{
-        members:{
-            users: GroupUser[]
-        },
-        waitingList: {
-            users: GroupUser[]
-        },
-        invites: {
-            users: GroupUser[]
-        }
-    };
-    currentSelectedMembers: {
-        users: GroupUser[]
-    };
-    currentWaitingList: {
-        users: GroupUser[]
-    };    
-    currentInvitationsList: {
-        users: GroupUser[]
-    };
+    selectedGroup: GroupSearchResult;
+    responseStatus: ResponseStatus;
 };
 
 class Container extends React.Component<AppProps & RouteComponentProps<PathProps>, State> {
@@ -101,20 +69,14 @@ class Container extends React.Component<AppProps & RouteComponentProps<PathProps
     constructor(props: AppProps & RouteComponentProps<PathProps>) {
         
         super(props);
-
-        // tslint:disable-next-line:no-console
-        console.log('Container - Current Store State is: ', store.getState());
-        const currentState = store.getState().system;
-
+        const currentState = store.getState();
         this.state = {
             system: currentState.system,
             userAccount: currentState.userAccount,
             groupSearchResults: currentState.groupSearchResults,
             userSearchResults: currentState.userSearchResults,
             selectedGroup: currentState.selectedGroupUser,
-            currentSelectedMembers: currentState.currentSelectedMembers,
-            currentWaitingList: currentState.currentWaitingList,
-            currentInvitationsList: currentState.currentInvitationsList
+            responseStatus: currentState.responseStatus
         };
     }
 
@@ -133,16 +95,14 @@ class Container extends React.Component<AppProps & RouteComponentProps<PathProps
 
 const mapStateToProps = (
     state: State, 
-    OwnProps: AppProps & RouteComponentProps<PathProps>
+    OwnProps: AppProps&RouteComponentProps<PathProps>
     ) => ({
-    system: state.system,
-    userAccout: state.userAccount,
-    groupSearchResults: state.groupSearchResults,
-    userSearchResults: state.userSearchResults,
-    selectedGroup: state.selectedGroup,
-    currentSelectedMembers: state.currentSelectedMembers,
-    currentWaitingList: state.currentWaitingList,
-    currentInvitationsList: state.currentInvitationsList
-})  
+        system: state.system,
+        userAccount: state.userAccount,
+        groupSearchResults: state.groupSearchResults,
+        userSearchResults: state.userSearchResults,
+        selectedGroup: state.selectedGroup,
+        responseStatus: state.responseStatus
+    });  
 
 export default withRouter(connect(mapStateToProps, null)(Container));

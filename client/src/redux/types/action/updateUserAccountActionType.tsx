@@ -1,13 +1,10 @@
-import { GroupSearchResult } from '../userInterface/groupSearchResult';
+import { UserDetailsResult } from '../userInterface/userDetailsResult';
 
 export const UPDATE_USER_ACCOUNT = 'UPDATE_USER_ACCOUNT';
 
 interface UpdateUserAccount {
     type: typeof UPDATE_USER_ACCOUNT
-    payload: {
-        subscribedGroups: GroupSearchResult[],
-        invitationList: GroupSearchResult[]
-    }
+    payload: UserDetailsResult
 }
 
 export type UpdateUserAccountActionType = UpdateUserAccount;

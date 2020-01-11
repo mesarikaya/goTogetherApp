@@ -46,25 +46,16 @@ class GroupSearchForm extends React.Component<Props, State> {
 
     // TODO: Need to FIND A WAY TO USE THE RIGHT TYPE WITHOUT ERROR React.ChangeEvent<HTMLInputElement>
     public handleChange = async (event: any): Promise<void> => {
-
-        // tslint:disable-next-line: no-console
-        console.log("Event handler on change: ", event.currentTarget.value);
-
         // read the form input fields
         const formFields = { ...this.props.formFields };
         formFields[event.currentTarget.name] = event.currentTarget.value;
         this.props.updateSearchFormFields(formFields);
-        
-        /*this.setState({
-            formFields
-        });*/
     }
 
     public handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
 
         // TODO: Add button disable
         submitForm(event);
-        
         this.setState({ validated: true });
 
         // TODO: Deactivate Button -- disable
@@ -140,7 +131,7 @@ class GroupSearchForm extends React.Component<Props, State> {
             <Form name="groupSearchForm" className="groupSearchFormValidation text-center" 
             noValidate={true} validated = {validated} onSubmit = {this.handleSubmit}>
                 <Form.Row> 
-                    <InputGroup className="justify-content-center">
+                    <InputGroup className="searchFormInputGroup justify-content-center">
                         {/* <!- Origin Input Group --> */}
                         <Form.Group className="originInputFormGroup">
                             {/* <!- Origin Input text --> */}

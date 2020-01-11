@@ -9,7 +9,8 @@ import { Table, Card, Button, ButtonToolbar } from 'react-bootstrap';
 import { updateGroupMember } from '../../../../redux/actions/GroupPage/updateGroupMemberAction';
 import { updateSelectedGroup } from 'src/redux/actions/GroupPage/updateSelectedGroupAction';
 import { withRouter } from 'react-router-dom';
-
+import { updateUserAccount } from 'src/redux/actions/UserPage/updateUserAccountAction';
+import { store } from 'src/redux/store';
 
 export interface Props {
     key: string;
@@ -18,6 +19,7 @@ export interface Props {
     token: string;
     onUpdateMember: typeof updateGroupMember;
     updateSelectedGroup: typeof updateSelectedGroup;
+    onGetUserAccountDetails: typeof updateUserAccount;
 }
 
 // These props are provided by the router
@@ -39,8 +41,17 @@ class UserSubscribedGroupsList extends React.Component<Props&PathProps,{}>{
         event.preventDefault();
         const groupId = currentGroup.id
         const userId = this.props.userName;
+        
         if(userId && groupId){
-           this.props.onUpdateMember(event, currentGroup, groupId, userId, this.props.token, 'delete');
+            
+            // Make a chained axios request
+            await Promise.all([this.props.onUpdateMember(event, currentGroup, groupId, userId, this.props.token, 'delete')]);
+                
+            const currAppState = store.getState();
+            await Promise.all([this.props.onGetUserAccountDetails(null, currAppState.system.userName,currAppState.system.token)]);
+            await this.props.onGetUserAccountDetails(null, 
+                                                     currAppState.system.userName,
+                                                     currAppState.system.token);
         }
     }
     

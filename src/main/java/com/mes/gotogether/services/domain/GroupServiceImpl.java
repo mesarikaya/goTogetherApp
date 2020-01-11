@@ -173,6 +173,7 @@ public class GroupServiceImpl implements GroupService{
         "Destination max latitude: " + destLatMax + "\n" +
         "Destination min longitude: " + destLongMin + "\n" +
         "Destination max longitude: " + destLongMax + "\n");
+        
         return groupRepository.findGroupsByOriginAndDestinationWithinThresholds(originLatMin, originLatMax,
                                                                                                                                         originLongMin, originLongMax,
                                                                                                                                         destLatMin, destLatMax,
@@ -333,20 +334,19 @@ public class GroupServiceImpl implements GroupService{
 
     @Override
     public Mono<Group> addMemberByUserId(ObjectId id, String userId) {
-              
-        
+         
         return userService.findByUserId(userId)
-                           .flatMap(user->{
-                               return this.findById(id)
-                                     .flatMap(group->{
-                                         Set<User> members = group.getMembers();
-                                         if (!members.contains(user)){
-                                            members.add(user);
-                                            group.setMembers(members);
-                                         }
-                                         return this.saveOrUpdate(group);
-                               }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
-                           }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
+                                      .flatMap(user->{
+                                          return this.findById(id)
+                                                .flatMap(group->{
+                                                    Set<User> members = group.getMembers();
+                                                    if (!members.contains(user)){
+                                                       members.add(user);
+                                                       group.setMembers(members);
+                                                    }
+                                                    return this.saveOrUpdate(group);
+                                          }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
+                                      }).switchIfEmpty(Mono.defer(() -> Mono.empty()));
     }
     
     @Override

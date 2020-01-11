@@ -7,7 +7,6 @@ import '../../../../stylesheets/css/cards/GroupPage.css';
 
 // Import store and types
 import { store } from 'src/redux/store';
-import { StoreState } from 'src/redux/types/storeState';
 import NavigationBar from '../../Navigation/NavigationBar';
 import { LoginFormFields } from 'src/redux/types/userInterface/loginFormFields';
 import { GroupSearchFormFields } from 'src/redux/types/userInterface/groupSearchFormFields';
@@ -23,12 +22,22 @@ import GroupSearchForm from '../../Forms/GroupSearchForm';
 import GroupSearchList from '../../Tables/GroupSearchList';
 import { SearchGroups } from 'src/redux/actions/groupSearchAction';
 import { updateSelectedGroup } from 'src/redux/actions/GroupPage/updateSelectedGroupAction';
+import { UserDetailsResult } from 'src/redux/types/userInterface/userDetailsResult';
+import { UpdateAuth } from 'src/redux/actions/jwtAuthAction';
+import { RegistrationFormFields } from 'src/redux/types/userInterface/registrationFormFields';
+import { registerAccount } from 'src/redux/actions/registerAccountAction';
+import { AppState } from 'src/redux/reducers/rootReducer';
 
 /** CREATE Prop and State interfaces to use in the component */
 // Set the default Props
 export interface UserProps{
+    isLoading: boolean;
+    userAccount: UserDetailsResult;
     groupSearchFormFields: GroupSearchFormFields;
+    onLoginSubmit: typeof UpdateAuth;
+    onRegistrationSubmit: typeof registerAccount;
     loginFormFields: LoginFormFields;
+    registrationFormFields: RegistrationFormFields;
     onSubmit: typeof SearchGroups;
     onUpdateGroupMember: typeof updateGroupMember;
     onUpdateGroupInvitationsList: typeof updateInvitationsList;
@@ -39,7 +48,8 @@ export interface UserProps{
 
 export interface UserState{
     groupSearchFormFields: GroupSearchFormFields;
-    storeState: StoreState;
+    storeState: AppState;
+    userInfo: UserDetailsResult;
 }
 
 // These props are provided by the router
@@ -49,15 +59,14 @@ interface PathProps {
     match: any;
 }
 
-class UserPage extends React.Component<UserProps & RouteComponentProps<PathProps>, UserState>{
+class UserPage extends React.Component<UserProps&RouteComponentProps<PathProps>, UserState>{
 
     public state: UserState;
 
-    constructor(props: UserProps& RouteComponentProps<PathProps>){
+    constructor(props:UserProps&RouteComponentProps<PathProps>){
 
         super(props);
-        const currAppState = store.getState();
-
+        const currAppState:AppState = store.getState();
         this.state = {
             groupSearchFormFields: {
                 origin: '',
@@ -65,7 +74,8 @@ class UserPage extends React.Component<UserProps & RouteComponentProps<PathProps
                 destination: '',
                 destinationRange: 2
             },
-            storeState: currAppState
+            storeState: currAppState,
+            userInfo: currAppState.userAccount
         };
 
         this.loadMore = this.loadMore.bind(this);
@@ -74,16 +84,16 @@ class UserPage extends React.Component<UserProps & RouteComponentProps<PathProps
 
     public componentDidMount() {
         const currAppState = store.getState();
-        this.props.onGetUserAccountDetails(null, 
-                                           currAppState.groupSearchResults.groups, 
+        this.props.onGetUserAccountDetails(null,
                                            currAppState.system.userName,
                                            currAppState.system.token);
     }
 
-    public componentDidUpdate(oldProps: UserProps & RouteComponentProps < PathProps >) {
+    public componentDidUpdate(oldProps:UserProps&RouteComponentProps<PathProps>) {
+
         const currAppState = store.getState();
         if(this.state.storeState !== currAppState){
-            this.setState({
+            this.setState({ 
                 storeState: currAppState
             });
         }
@@ -105,22 +115,31 @@ class UserPage extends React.Component<UserProps & RouteComponentProps<PathProps
         const groupSearchResult = this.state.storeState.groupSearchResults.groups;
         return (
             <div className="UserPage">
-                <NavigationBar loginFormFields={this.props.loginFormFields} />
-                <div className="container px-0 mx-auto">
+                <NavigationBar storeState={this.state.storeState}
+                               loginFormFields={this.props.loginFormFields}
+                               registrationFormFields={this.props.registrationFormFields} 
+                               onLoginSubmit={this.props.onLoginSubmit}
+                               onRegistrationSubmit={this.props.onRegistrationSubmit}
+                               onGetUserAccountDetails={this.props.onGetUserAccountDetails}
+                />
+                <div className="container px-0 mx-auto pageContainer">
                     <CardDeck key={this.state.storeState.system.userName}>
                         <UserSubscribedGroupsList key={this.state.storeState.system.userName+"_subs"}
                                                   subscribedGroups={this.state.storeState.userAccount.subscribedGroups}
                                                   userName={this.state.storeState.system.userName}
                                                   token={this.state.storeState.system.token}
                                                   onUpdateMember={this.props.onUpdateGroupMember}
-                                                  updateSelectedGroup={this.props.updateSelectedGroup}/>
+                                                  updateSelectedGroup={this.props.updateSelectedGroup}
+                                                  onGetUserAccountDetails={this.props.onGetUserAccountDetails}/>
 
                         <UserInvitationsList key={this.state.storeState.system.userName+"_invites"} 
                                              invitationsList={this.state.storeState.userAccount.invitationList}
                                              userName={this.state.storeState.system.userName}
                                              token={this.state.storeState.system.token}
                                              onUpdateMember={this.props.onUpdateGroupMember}
-                                             updateSelectedGroup={this.props.updateSelectedGroup}/>
+                                             onUpdateInvitationList={this.props.onUpdateGroupInvitationsList}
+                                             updateSelectedGroup={this.props.updateSelectedGroup}
+                                             onGetUserAccountDetails={this.props.onGetUserAccountDetails}/>
                     </CardDeck>
                 </div>
                     
@@ -168,16 +187,23 @@ class UserPage extends React.Component<UserProps & RouteComponentProps<PathProps
 // Create mapToState and mapDispatch for Redux
 const mapStateToProps = (
     state: UserState, 
-    OwnProps: UserProps & RouteComponentProps<PathProps>
+    OwnProps: UserProps&RouteComponentProps<PathProps>
     ) => {
     return {
         storeState: state.storeState
     }
 }
 
-// TODO: Add user search dispatch
 const mapDispatchToProps = (dispatch: any) => {
     return {
+        onLoginSubmit: (
+            e: React.FormEvent<HTMLFormElement>, 
+            formFields: LoginFormFields
+        ) => dispatch(UpdateAuth(e, formFields)),
+        onRegistrationSubmit: (
+            e: React.FormEvent<HTMLFormElement>, 
+            formFields: RegistrationFormFields
+        ) => dispatch(registerAccount(e, formFields)),
         onSubmit: (
             e: React.FormEvent<HTMLFormElement>, 
             formFields: GroupSearchFormFields,
@@ -186,11 +212,10 @@ const mapDispatchToProps = (dispatch: any) => {
             token: string,
         ) => dispatch(SearchGroups(e, formFields, existingUsers, page, token)),
         onGetUserAccountDetails: (
-            event: React.MouseEvent<HTMLButtonElement> | null, 
-            existingGroups: GroupSearchResult[],
+            event: React.MouseEvent<HTMLButtonElement> | null,
             userId: string,
             token: string
-        ) => dispatch(updateUserAccount(event, existingGroups, userId, token)),
+        ) => dispatch(updateUserAccount(event, userId, token)),
         onUpdateGroupMember: (
             e: React.MouseEvent<HTMLButtonElement>,
             currentGroup: GroupSearchResult,

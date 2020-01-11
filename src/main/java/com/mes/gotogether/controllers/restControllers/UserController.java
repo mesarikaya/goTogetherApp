@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -54,16 +56,15 @@ public class UserController {
     @GetMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     public Flux<List<UserSearchResponse>> getUsersByOriginAndDestinationWithinRadius(@RequestParam("origin") String origin,  
-                                                                                                                                            @RequestParam("destination") String destination,
-    							@RequestParam("originRange") double originRadius, 
-                                                                                                                                            @RequestParam("destinationRange") double destRadius,
-                                                                                                                                            @RequestParam("page") int page, @RequestParam("size") int size)
-    {
+                                                                                                                                                             @RequestParam("destination") String destination,
+    							                 @RequestParam("originRange") double originRadius, 
+                                                                                                                                                             @RequestParam("destinationRange") double destRadius,
+                                                                                                                                                             @RequestParam("page") int page, @RequestParam("size") int size) {
+        
+                    Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "id");  
     	return groupService.findGroupsByOriginAndDestinationAddress(origin, destination, 
                                                                                                                                originRadius, destRadius, 
-                                                                                                                               PageRequest.of(page, size))
-                                                     .log("Source GET GEROUPS")
-                                                     .checkpoint("In get groups")
+                                                                                                                               pageable)
                                                      .map(group -> {
                                                          List<UserSearchResponse> response= new ArrayList<>();
                                                          group.getMembers().stream().forEach(user -> response.add(new UserSearchResponse(user)));
@@ -77,7 +78,6 @@ public class UserController {
         
         Predicate<User> isUser = user -> user.getUserId().equals(userId);
         Predicate<Group> isMemberOrInvited = (group) -> group.getMembers().stream().anyMatch(isUser) || group.getInvites().stream().anyMatch(isUser);
-        
         return groupService.findAll()
                                          .filter(isMemberOrInvited)
                                          .map(group -> new GroupSearchResponse(group));

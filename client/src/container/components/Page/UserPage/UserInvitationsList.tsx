@@ -6,9 +6,12 @@ import '../../../../stylesheets/css/cards/CardTable.css';
 // Import the store and types
 import { GroupSearchResult } from '../../../../redux/types/userInterface/groupSearchResult';
 import { Table, Card, Button, ButtonToolbar } from 'react-bootstrap';
-import { updateGroupMember } from 'src/redux/actions/GroupPage/updateGroupMemberAction';
+import { updateGroupMember } from '../../../../redux/actions/GroupPage/updateGroupMemberAction';
 import { withRouter } from 'react-router-dom';
-import { updateSelectedGroup } from 'src/redux/actions/GroupPage/updateSelectedGroupAction';
+import { updateSelectedGroup } from '../../../../redux/actions/GroupPage/updateSelectedGroupAction';
+import { updateInvitationsList } from '../../../../redux/actions/GroupPage/updateInvitationsListAction';
+import { updateUserAccount } from '../../../../redux/actions/UserPage/updateUserAccountAction';
+import { store } from 'src/redux/store';
 
 export interface Props {
     key: string;
@@ -16,7 +19,9 @@ export interface Props {
     userName: string;
     token: string;
     onUpdateMember: typeof updateGroupMember;
+    onUpdateInvitationList: typeof updateInvitationsList;
     updateSelectedGroup: typeof updateSelectedGroup;
+    onGetUserAccountDetails: typeof updateUserAccount;
 }
 
 // These props are provided by the router
@@ -38,11 +43,15 @@ class UserInvitationsList extends React.Component<Props&PathProps,{}>{
         event.preventDefault();
         const groupId = currentGroup.id;
         const userId = this.props.userName;
-
-        // tslint:disable-next-line: no-console
-        console.log("Groupid is: " + groupId);
-        if(userId && groupId){
-            this.props.onUpdateMember(event, currentGroup, groupId, userId, this.props.token, 'add');
+        if(userId && groupId){            
+            // Make a chained axios request
+            await Promise.all([this.props.onUpdateMember(event, currentGroup, groupId, userId, this.props.token, 'add')]);
+    
+            const currAppState = store.getState();
+            await Promise.all([this.props.onGetUserAccountDetails(null, currAppState.system.userName,currAppState.system.token)]);
+            await this.props.onGetUserAccountDetails(null, 
+                                                     currAppState.system.userName,
+                                                     currAppState.system.token);
         }
     }
 
@@ -52,7 +61,14 @@ class UserInvitationsList extends React.Component<Props&PathProps,{}>{
         const groupId = currentGroup.id;
         const userId = this.props.userName;
         if(userId && groupId){
-           this.props.onUpdateMember(event, currentGroup, groupId, userId, this.props.token, 'delete');
+            
+            await Promise.all([this.props.onUpdateInvitationList(event, currentGroup, groupId, userId, this.props.token, 'delete')]);
+            
+            const currAppState = store.getState();
+            await Promise.all([this.props.onGetUserAccountDetails(null, currAppState.system.userName,currAppState.system.token)]);
+            await this.props.onGetUserAccountDetails(null, 
+                                                     currAppState.system.userName,
+                                                     currAppState.system.token);               
         }
     }
 
