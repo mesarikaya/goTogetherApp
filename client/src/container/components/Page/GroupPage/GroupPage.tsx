@@ -6,36 +6,41 @@ import { RouteComponentProps, withRouter } from "react-router";
 //  import createBrowserHistory from 'history/createBrowserHistory';
 // const history = createBrowserHistory({ forceRefresh: true });
 
+// import components
+import NavigationBar from '../../Navigation/NavigationBar';
+import GroupMemberTable from './GroupMemberTable';
+import GroupWaitingList from './GroupWaitingList';
+import GroupSearchForm from '../../Forms/GroupSearchForm';
+import UserTableList from '../UserPage/UserTableList';
+
 // Add styling related imports
 import '../../../../stylesheets/css/cards/GroupPage.css';
 
 // Import store and types
 import { store } from 'src/redux/store';
-import NavigationBar from '../../Navigation/NavigationBar';
 import { LoginFormFields } from 'src/redux/types/userInterface/loginFormFields';
-import GroupMemberTable from './GroupMemberTable';
 import { GroupUser } from '../../../../redux/types/userInterface/groupUser';
-import GroupWaitingList from './GroupWaitingList';
-import { CardDeck, Button } from 'react-bootstrap';
+import { CardDeck, Button, Spinner } from 'react-bootstrap';
 import { SearchUsers } from '../../../../redux/actions/userSearchAction';
-import GroupSearchForm from '../../Forms/GroupSearchForm';
 import { UserSearchResult } from '../../../../redux/types/userInterface/userSearchResult';
 import { GroupSearchResult } from '../../../../redux/types/userInterface/groupSearchResult';
 import { GroupSearchFormFields } from '../../../../redux/types/userInterface/groupSearchFormFields';
-import UserTableList from '../../Tables/UserTableList';
 import { updateGroupMember } from '../../../../redux/actions/GroupPage/updateGroupMemberAction';
 import { updateWaitingList } from '../../../../redux/actions/GroupPage/updateWaitingListAction';
 import { updateGroup } from '../../../../redux/actions/GroupPage/updateGroupAction';
 import { updateInvitationsList } from '../../../../redux/actions/GroupPage/updateInvitationsListAction';
 import { updateUserAccount } from '../../../../redux/actions/UserPage/updateUserAccountAction';
-import { UpdateAuth } from '../../../../redux/actions/jwtAuthAction';
+import { UpdateAuth } from '../../../../redux/actions/jwtAuthActionLogin';
 import { RegistrationFormFields } from 'src/redux/types/userInterface/registrationFormFields';
 import { registerAccount } from 'src/redux/actions/registerAccountAction';
 import { AppState } from 'src/redux/reducers/rootReducer';
+import { sendAccountVerification } from 'src/redux/actions/sendAccountVerificationAction';
+import { onLogoutUpdateAuth } from 'src/redux/actions/jwtAuthActionLogout';
+import { SecurityState } from 'src/redux/types/system/securityState';
 
 /** CREATE Prop and State interfaces to use in the component */
 // Set the default Props
-export interface GroupProps{
+export interface Props{
     isLoading: boolean;
     groupInfo: GroupSearchResult;
     userSearchFormFields: GroupSearchFormFields;
@@ -49,9 +54,12 @@ export interface GroupProps{
     onUpdateInvitationsList: typeof updateInvitationsList;
     onGroupDelete: typeof updateGroup;
     onGetUserAccountDetails: typeof updateUserAccount;
+    onVerificationSubmit: typeof sendAccountVerification;
+    onLogout: typeof onLogoutUpdateAuth;
 }
 
-export interface GroupState{
+export interface State{
+    isLoading: boolean;
     groupInfo: GroupSearchResult;
     userSearchFormFields: GroupSearchFormFields;
     storeState: AppState;
@@ -66,17 +74,18 @@ interface PathProps {
     match: any;
 }
 
-class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathProps>, GroupState>{
+class GroupPage extends React.Component<Props & RouteComponentProps<PathProps>, State>{
 
-    public state: GroupState;
+    public state: State;
 
-    constructor(props: GroupProps& RouteComponentProps<PathProps>){
+    constructor(props: Props& RouteComponentProps<PathProps>){
 
         super(props);
         const currAppState:AppState = store.getState();
         const selectedGroup:GroupSearchResult = currAppState.selectedGroup; 
         
         this.state = {
+            isLoading: false,
             groupInfo: selectedGroup,
             userSearchFormFields: {
                 origin: '',
@@ -96,7 +105,7 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathPro
         this.handleGroupDeleteRequest = this.handleGroupDeleteRequest.bind(this);
     }
 
-    public componentDidUpdate(oldProps: GroupProps& RouteComponentProps < PathProps >) {
+    public componentDidUpdate(oldProps: Props& RouteComponentProps < PathProps >) {
         
         const currAppState = store.getState();
         const selectedGroup:GroupSearchResult = currAppState.selectedGroup;
@@ -124,12 +133,14 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathPro
         return isOwnerInGroup;
     }
 
-    public loadMore = async (event: any): Promise<void> => {     
+    public loadMore = async (event: any): Promise<void> => {
+        this.isLoading(true);     
         this.props.onSubmit(null, 
                             this.state.userSearchFormFields, 
                             this.state.storeState.userSearchResults.users,
                             this.state.storeState.userSearchResults.page,
                             this.state.storeState.system.token);
+        this.isLoading(false);
     }
 
     public handleUserSearchFormUpdate = (formFields: GroupSearchFormFields): void => {
@@ -161,8 +172,52 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathPro
     public handleGroupDeleteRequest = async (event: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
         event.preventDefault();
         const groupId = this.state.groupInfo.id;
-        this.props.onGroupDelete(event, this.state.storeState.groupSearchResults.groups, groupId, this.state.storeState.system.token);
+        await Promise.resolve(this.props.onGroupDelete(event, this.state.storeState.groupSearchResults.groups, groupId, this.state.storeState.system.token));
+        window.setTimeout(() =>{
+            this.props.history.push('/');
+        }, 3000);
     }
+
+    public isLoading(status: boolean) {
+        this.setState({ isLoading: status });
+    }
+
+    public loadTable = (userSearchResult: UserSearchResult[]) => {
+        if (this.state.isLoading===true){
+            return (
+                <div className="row justify-content-center">
+                    <Spinner
+                        className="text-center"
+                        as="span"
+                        animation="grow" 
+                        variant="warning"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                    />
+                <p className="text-center">Processing</p>
+            </div>);
+        }else{
+            if (Object.keys(userSearchResult).length>0){
+                    return (
+                    <div className="row justify-content-center">
+                        <UserTableList userList={this.state.storeState.userSearchResults.users}
+                                       groupInfo={this.state.groupInfo}
+                                       token={this.state.storeState.system.token}
+                                       isUserInGroup={this.state.isUserInGroup}
+                                       isUserOwnerInGroup={this.state.isUserOwnerInGroup}
+                                       onInviteUser={this.props.onUpdateInvitationsList}
+                        />
+                       {this.state.storeState.userSearchResults.page !== 0 ? 
+                            <Button type="button" onClick={this.loadMore}> Load More... </Button>: null
+                       }
+                    </div>);
+            }else{
+                return <div className="row justify-content-center">No Records found</div>;
+            }
+        }
+    }
+
 
     public render() {
         
@@ -175,6 +230,8 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathPro
                                onLoginSubmit={this.props.onLoginSubmit}
                                onRegistrationSubmit={this.props.onRegistrationSubmit}
                                onGetUserAccountDetails={this.props.onGetUserAccountDetails}
+                               onVerificationSubmit={this.props.onVerificationSubmit}
+                               onLogout={this.props.onLogout}
                 />
                 <div className="container px-0 mx-auto pageContainer">
                     <h2 className="text-center">                                
@@ -222,26 +279,15 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathPro
                                 token={this.state.storeState.system.token}
                                 updateSearchFormFields={this.handleUserSearchFormUpdate}
                                 onSubmit={this.props.onSubmit}
+                                // tslint:disable-next-line: jsx-no-lambda
+                                isLoading={(status:boolean) => this.isLoading(status)}                                
                             />
                         </div>
                     </div>
                 </div>
 
                 <div className="container mx-auto my-auto p-2">                       
-                    {Object.keys(userSearchResult).length>0 ? (
-                    <div>
-                        <UserTableList userList={this.state.storeState.userSearchResults.users}
-                                       groupInfo={this.state.groupInfo}
-                                       token={this.state.storeState.system.token}
-                                       isUserInGroup={this.state.isUserInGroup}
-                                       isUserOwnerInGroup={this.state.isUserOwnerInGroup}
-                                       onInviteUser={this.props.onUpdateInvitationsList}
-                        />
-                       {this.state.storeState.userSearchResults.page !== 0 ? 
-                            <Button type="button" onClick={this.loadMore}> Load More... </Button>: null
-                       }
-                    </div>): null
-                    }        
+                    {this.loadTable(userSearchResult)}        
                 </div>
             </div>
         );
@@ -250,8 +296,8 @@ class GroupPage extends React.Component<GroupProps & RouteComponentProps<PathPro
 
 // Create mapToState and mapDispatch for Redux
 const mapStateToProps = (
-    state: GroupState, 
-    OwnProps: GroupProps&RouteComponentProps<PathProps>
+    state: State, 
+    OwnProps: Props&RouteComponentProps<PathProps>
     ) => {
     return {
         groupInfo: state.groupInfo,
@@ -312,7 +358,15 @@ const mapDispatchToProps = (dispatch: any) => {
             event: React.MouseEvent<HTMLButtonElement> | null,
             userId: string,
             token: string
-        ) => dispatch(updateUserAccount(event, userId, token))
+        ) => dispatch(updateUserAccount(event, userId, token)),
+        onVerificationSubmit: (
+            e: React.FormEvent<HTMLFormElement>, 
+            formFields: {userName: string}
+        ) => dispatch(sendAccountVerification(e, formFields)),
+        onLogout: (
+            event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+            currentSecurityState: SecurityState
+        ) => dispatch(onLogoutUpdateAuth(event, currentSecurityState))
     }
 }
 

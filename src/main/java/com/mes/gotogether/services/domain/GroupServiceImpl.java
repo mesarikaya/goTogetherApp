@@ -247,19 +247,22 @@ public class GroupServiceImpl implements GroupService{
     @Override
     public Mono<Group> saveOrUpdate(Group group) {
         
-        if (!Objects.isNull(group)){     
-            return groupRepository.findById(group.getId())
-                                                   .log()
-                                                   .flatMap(groupInDb -> {
-                                                            group.setId(groupInDb.getId());
-                                                            log.debug("Updating the group:");
-                                                            return groupRepository.save(group);
-                                                   })
-                                                   .switchIfEmpty(Mono.defer(() -> {
-                                                            log.debug("Creating a new Group");
-                                                            return groupRepository.save(group);
-                                                   }));
-                                            // TODO: ADD ERROR OR SUCCESS HANDLERS*/
+        if (!Objects.isNull(group)){
+            if (group.getId() == null){
+                return groupRepository.save(group);
+            }else{
+                return groupRepository.findById(group.getId())
+                                                       .log()
+                                                       .flatMap(groupInDb -> {
+                                                                group.setId(groupInDb.getId());
+                                                                log.debug("Updating the group:");
+                                                                return groupRepository.save(group);
+                                                       })
+                                                       .switchIfEmpty(Mono.defer(() -> {
+                                                                log.debug("Creating a new Group");
+                                                                return groupRepository.save(group);
+                                                       }));
+            }
         }else{
             // TODO: CREATE ERROR HANDLERS
             log.debug("Could not save the GROUP");

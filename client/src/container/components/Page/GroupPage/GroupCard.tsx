@@ -1,13 +1,13 @@
 import * as React from 'react';
 
 // Import types
-import { GroupUser } from '../../../redux/types/userInterface/groupUser';
-import { GroupSearchResult } from '../../../redux/types/userInterface/groupSearchResult';
-import { updateSelectedGroup } from '../../../redux/actions/GroupPage/updateSelectedGroupAction';
+import { GroupUser } from '../../../../redux/types/userInterface/groupUser';
+import { GroupSearchResult } from '../../../../redux/types/userInterface/groupSearchResult';
+import { updateSelectedGroup } from '../../../../redux/actions/GroupPage/updateSelectedGroupAction';
 
 // Styling imports
 import { Card } from 'react-bootstrap';
-import '../../../stylesheets/css/cards/groupCard.css';
+import '../../../../stylesheets/css/cards/groupCard.css';
 import { withRouter, RouteComponentProps } from 'react-router';
 
 

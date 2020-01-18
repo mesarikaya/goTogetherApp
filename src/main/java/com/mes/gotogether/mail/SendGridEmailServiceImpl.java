@@ -42,13 +42,13 @@ public class SendGridEmailServiceImpl implements EmailService{
         String from = "noreplygotogether@gmail.com";
         String subject = "Complete Registration";
         String to = user.getEmail();
-        String content = "Dear " + user.getUserId() + ", \n\n"+ 
-                                        "We are delighted to see you joining our growing member base.\n\n" + 
-                                        "To be able to finalize the sign up process, please verify your account by clicking the link: \n\n" +
-                                        origin+ "/" + "api" + "/" + "v1" + "/"  + "verify/validate" +
-                                        "/" + user.getUserId()+ "/" + user.getVerificationToken() + ".\n\n"+
-                                        "Thanks for choosing us.\n\n" +
-                                       "Kind Regards, \n\n" + "On behalf of GoTogether Team";
+        String content = "Dear " + user.getUserId() + "," + "<br>"+ "<br>" +
+                                        "We are delighted to see you joining our growing member base."+ "<br>" + 
+                                        "To be able to finalize the sign up process, please verify your account by clicking the link: " + "<br>" +
+                                        origin+ "/"  + "verify/validate" +
+                                        "/" + user.getUserId()+ "/" + user.getVerificationToken() + "." +"<br>"+ "<br>" + 
+                                        "Thanks for choosing us." + "<br>" +
+                                       "Kind Regards," + "<br>" + "On behalf of GoTogether Team";
           Mono<HttpResponse> response = null;
             try {
                 SendGridEmail sendGridEmail = SendGridEmail.build(from, user.getEmail(), subject, content);
@@ -60,7 +60,7 @@ public class SendGridEmailServiceImpl implements EmailService{
                 log.info("Send Grid response: {}", sgresponse.statusCode().toString());
                 HttpResponse notificationStatusResponse = null;
                 if (sgresponse.statusCode().is2xxSuccessful()) {
-                    notificationStatusResponse = new HttpResponse(HttpStatus.OK, 
+                    notificationStatusResponse = new HttpResponse(HttpStatus.ACCEPTED, 
                                                                                                       HttpResponse.ResponseType.SUCCESS,
                                                                                                       "Message request delivered");
                 } else {

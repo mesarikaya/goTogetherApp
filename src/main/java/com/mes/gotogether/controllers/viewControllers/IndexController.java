@@ -86,7 +86,7 @@ public class IndexController {
             model.addAttribute("error", "Your username and password is invalid.");
         }
 
-        model.addAttribute("userLoginForm", authRequest.getUsername());
+        model.addAttribute("userLoginForm", authRequest.getUserName());
 
         return "login";
     }

@@ -7,6 +7,7 @@ import { Route, Switch, withRouter } from 'react-router-dom';
 import App from './components/Page/App';
 import GroupPage from './components/Page/GroupPage/GroupPage';
 import UserPage from './components/Page/UserPage/UserPage';
+import VerifyUser from './components/Page/VerifyUser';
 
 // Import store and relevant types
 import {store} from "../redux/store";
@@ -16,6 +17,7 @@ import { UserSearchResult } from 'src/redux/types/userInterface/userSearchResult
 import { GroupUser } from 'src/redux/types/userInterface/groupUser';
 import { UserDetailsResult } from 'src/redux/types/userInterface/userDetailsResult';
 import ResponseStatus from 'src/redux/types/userInterface/responseStatus';
+
 
 interface AppProps {
     system: SecurityState;
@@ -85,8 +87,10 @@ class Container extends React.Component<AppProps & RouteComponentProps<PathProps
         return (
             <Switch>
                 <Route exact={true} path="/" component={App}/>
+                <Route path="/app" component={App}/>
                 <Route path="/group" component={GroupPage} />
                 <Route path="/user" component={UserPage} />
+                <Route path="/verify/validate/:userID/:verificationToken" component={VerifyUser} />
                 <Route path="/**" component={App} />
             </Switch>
         );

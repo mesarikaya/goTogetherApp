@@ -1,7 +1,6 @@
 import axios from "axios";
 axios.defaults.withCredentials = true;
 import { Dispatch } from "redux";
-import { RegistrationFormFields } from '../types/userInterface/registrationFormFields';;
 import { UpdateResponseStatusActionType } from '../types/action/updateResponseStatusActionType';
 import ResponseStatus from '../types/userInterface/responseStatus';
 
@@ -13,14 +12,15 @@ const url = process.env.REACT_APP_NODE_ENV === 'production' ? "/api/auth/" : "ht
  * @param e HTML Form Event
  * @param formFields Registration Form input data
  */
-export function registerAccount(event: React.FormEvent<HTMLFormElement>, formFields: RegistrationFormFields) {
+export function sendAccountVerification(event: React.FormEvent<HTMLFormElement>, 
+                                        formFields: {userName: string}) {
     
     if (event !== null) { event.preventDefault(); }
 
     // Set data to send with Post request
     const data = formFields;
     return ((dispatch: Dispatch<UpdateResponseStatusActionType>) => {
-        return (axios.post(`${url}register`, data, { 
+        return (axios.post(`${url}verify`, data, { 
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
@@ -77,6 +77,7 @@ export function registerAccount(event: React.FormEvent<HTMLFormElement>, formFie
                 }
             }
 
+            return dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });  
 
             return dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads }); 
         }));

@@ -109,7 +109,7 @@ class GroupWaitingList extends React.Component<Props,{}>{
                     </Card.Header>
                     <Card.Body>
                         <Table responsive={true}>
-                            <thead>
+                            <thead className="tableHeader">
                                 <tr>
                                     <th className="text-center">Name</th>
                                     <th className="text-center">Adress</th>

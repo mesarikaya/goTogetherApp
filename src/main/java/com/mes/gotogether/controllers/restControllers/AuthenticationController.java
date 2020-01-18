@@ -9,6 +9,7 @@ import com.mes.gotogether.mail.EmailService;
 import com.mes.gotogether.security.domain.AuthRequest;
 import com.mes.gotogether.security.domain.AuthResponse;
 import com.mes.gotogether.security.domain.SecurityUserLibrary;
+import com.mes.gotogether.security.domain.SendVerificationForm;
 import com.mes.gotogether.security.jwt.JWTUtil;
 import com.mes.gotogether.security.service.SecurityUserLibraryUserDetailsService;
 import com.mes.gotogether.services.domain.AddressService;
@@ -26,12 +27,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -65,41 +65,70 @@ public class AuthenticationController {
      }
 
      @PostMapping("/login")
-     @CrossOrigin(origins = "http://localhost:3000",
-         maxAge = 18000,
-         allowCredentials = "true")
      public Mono<ResponseEntity<?>> login(@RequestBody AuthRequest ar, ServerHttpResponse serverHttpResponse) {
 
-          return securityUserService
-              .findByUserId(ar.getUsername().split("@")[0])
-              .map(( userDetails ) -> {
-                   if (passwordEncoder.matches(ar.getPassword(), userDetails.getPassword())) {
-                        log.info("Authorized! YEAH!!!!");
-                        String token = jwtUtil.generateToken((SecurityUserLibrary) userDetails);
-                        ResponseCookie cookie = ResponseCookie.from("System", token)
-                            .sameSite("Strict")
-                            .path("/")
-                            .maxAge(3000)
-                            .httpOnly(true)
-                            .build();
-                        serverHttpResponse.addCookie(cookie);
+          return securityUserService.findByUserId(ar.getUserName().split("@")[0])
+                                                     .map( (userDetails) -> {
+                                                          if (passwordEncoder.matches(ar.getPassword(), userDetails.getPassword())) {
+                                                               log.info("Authorized! YEAH!!!!");
+                                                               String token = jwtUtil.generateToken((SecurityUserLibrary) userDetails);
+                                                               ResponseCookie cookie = ResponseCookie.from("System", token)
+                                                                   .sameSite("Strict")
+                                                                   .path("/")
+                                                                   .maxAge(3000)
+                                                                   .httpOnly(true)
+                                                                   .build();
+                                                               serverHttpResponse.addCookie(cookie);
 
-                        log.info("Server response: " + serverHttpResponse.getCookies().toSingleValueMap().values());
-                        return ResponseEntity.ok()
-                            .contentType(MediaType.APPLICATION_JSON_UTF8)
-                            .body(new AuthResponse(token, userDetails.getUsername()));
-                   } else {
-                        System.out.println("Returning unauthorized");
-                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-                   }
-              }).defaultIfEmpty(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
-
+                                                               log.info("Server response: " + serverHttpResponse.getCookies().toSingleValueMap().values());
+                                                               return ResponseEntity.ok()
+                                                                                                    .contentType(MediaType.APPLICATION_JSON_UTF8)
+                                                                                                    .body(new AuthResponse(token, userDetails.getUsername()));
+                                                         } else {
+                                                              log.info("Returning unauthorized");
+                                                              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                                                         }
+                                                     }).defaultIfEmpty(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
      }
-
+     
+     
+     @GetMapping("/logout")
+     public Mono<HttpResponse> logout(@RequestParam("userName") String userName, 
+                                                                     @RequestParam("token") String token,
+                                                                     ServerHttpResponse serverHttpResponse){
+         log.info("Trying to logout!");
+         log.info("delete the existing cookie");
+         ResponseCookie cookie = ResponseCookie.from("System", token)
+                                                                   .sameSite("Strict")
+                                                                   .path("/")
+                                                                   .maxAge(0)
+                                                                   .httpOnly(true)
+                                                                   .build();
+                                                               serverHttpResponse.addCookie(cookie);
+          log.info("Cookie is deleted");
+          return securityUserService.findByUserId(userName.split("@")[0])
+                                                     .flatMap( (userDetails) -> {
+                                                         log.info("jwt trials token: " + token);
+                                                          if ( userDetails.getUsername().equals(jwtUtil.getUsernameFromToken(token))){
+                                                              log.debug("Logging out user: " + jwtUtil.getUsernameFromToken(token));
+                                                              return Mono.just(new HttpResponse(HttpStatus.OK, 
+                                                                                                                           HttpResponse.ResponseType.SUCCESS,
+                                                                                                                           "Logout is successful!"));
+                                                         } else {
+                                                              log.info("Returning unauthorized");
+                                                              return Mono.just(new HttpResponse(HttpStatus.BAD_REQUEST, 
+                                                                                                                           HttpResponse.ResponseType.FAILURE,
+                                                                                                                           "Token is invalid!"));
+                                                         }
+                                                     }).defaultIfEmpty(new HttpResponse(HttpStatus.OK, 
+                                                                                                                           HttpResponse.ResponseType.FAILURE,
+                                                                                                                           "Logout is not successful!"))
+                                                    .onErrorResume(ex -> Mono.just(new HttpResponse(HttpStatus.BAD_REQUEST, 
+                                                                                                                                  HttpResponse.ResponseType.FAILURE,
+                                                                                                                                  ex.getMessage())));
+     }
+     
      @PostMapping("/register")
-     @CrossOrigin(origins = "http://localhost:3000",
-         maxAge = 18000,
-         allowCredentials = "true")
      public Mono<HttpResponse> registerUser(@RequestBody UserDTO userDTO, ServerHttpRequest serverHttpRequest) {
 
           User user = new User();
@@ -118,8 +147,8 @@ public class AuthenticationController {
           address.setZipcode(userDTO.getZipcode());
           user.setAddress(address);
           String origin = serverHttpRequest.getHeaders().getOrigin();
+          addressService.saveOrUpdateAddress(address); // TODO remove this and integrate with registration
           
-          System.out.println("Inside the register method with userId");
           return userService.findByUserId(user.getUserId()).hasElement()
                                         .flatMap( (item) -> {
                                             if (item) {
@@ -140,13 +169,14 @@ public class AuthenticationController {
      }
      
      @PostMapping("/verify")
-     public Mono<HttpResponse> sendUserVerification(@RequestBody String userId, ServerHttpRequest serverHttpRequest) {
+     public Mono<HttpResponse> sendUserVerification(@RequestBody SendVerificationForm sendVerificationForm, 
+                                                                                                                         ServerHttpRequest serverHttpRequest) {
           
           String origin = serverHttpRequest.getHeaders().getOrigin();
+          String userId = sendVerificationForm.getUserName();
           return userService.findByUserId(userId)
                                         .flatMap(u -> {
-                                            return userService.renewVerificationDetails(userId)
-                                                                          .flatMap( updatedUser -> sendEmail(updatedUser.getUserId(), origin));
+                                            return userService.renewVerificationDetails(userId);
                                         })
                                         .hasElement()
                                         .flatMap( (item) -> {
@@ -161,10 +191,10 @@ public class AuthenticationController {
                                                                                                                                   ex.getMessage())));         
      }
      
-     @GetMapping("/verify/validate/{userId}/{verificationTokem}")
-     public Mono<HttpResponse> validateVerificationToken(@PathVariable("userID") String userId, 
-                                                                                                       @PathVariable("verificationToken") String verificationToken){
-         
+     @GetMapping("/verify/validate")
+     public Mono<HttpResponse> validateVerificationToken(@RequestParam("userID") String userId, 
+                                                                                                       @RequestParam("verificationToken") String verificationToken){
+         log.debug("Request: Validating user verification token user" + userId + " and verification token: " + verificationToken);
          return userService.findByUserId(userId)
                                        .flatMap( u -> {
                                            LocalDateTime currentTime = LocalDateTime.now();
@@ -174,7 +204,6 @@ public class AuthenticationController {
                                                                              .map(t ->new HttpResponse(HttpStatus.OK, 
                                                                                                               HttpResponse.ResponseType.SUCCESS,
                                                                                                               "Verification is complete"));
-                                                                            
                                            } else {
                                                return Mono.just(new HttpResponse(HttpStatus.BAD_REQUEST, 
                                                                                                               HttpResponse.ResponseType.FAILURE,
@@ -183,7 +212,12 @@ public class AuthenticationController {
                                            }
                                        }).defaultIfEmpty(new HttpResponse(HttpStatus.BAD_REQUEST, 
                                                                                                               HttpResponse.ResponseType.FAILURE,
-                                                                                                              "Verification is NOT completed!"));
+                                                                                                              "Verification is NOT completed!"))
+                                       .onErrorResume(ex -> {
+                                           log.info("Inside on error resume");
+                                           return Mono.just(new HttpResponse(HttpStatus.BAD_REQUEST, 
+                                                                                                                                  HttpResponse.ResponseType.FAILURE,
+                                                                                                                                  ex.getMessage())); });         
      }
         
     private Mono<HttpResponse> sendEmail(@NotNull String userId, String origin){

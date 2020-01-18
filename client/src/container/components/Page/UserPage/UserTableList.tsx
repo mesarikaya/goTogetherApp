@@ -1,14 +1,14 @@
 import * as React from 'react';
 
 // Import types
-import { UserSearchResult } from '../../../redux/types/userInterface/userSearchResult';
+import { UserSearchResult } from '../../../../redux/types/userInterface/userSearchResult';
 
 // Styling imports
 import { Card, Button, Table } from 'react-bootstrap';
-import '../../../stylesheets/css/cards/groupCard.css';
+import '../../../../stylesheets/css/cards/groupCard.css';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { GroupSearchResult } from '../../../redux/types/userInterface/groupSearchResult';
-import { updateInvitationsList } from '../../../redux/actions/GroupPage/updateInvitationsListAction';
+import { GroupSearchResult } from '../../../../redux/types/userInterface/groupSearchResult';
+import { updateInvitationsList } from '../../../../redux/actions/GroupPage/updateInvitationsListAction';
 
 interface Props {
     groupInfo: GroupSearchResult;
@@ -78,7 +78,7 @@ class UserTableList extends React.Component<Props & RouteComponentProps < PathPr
                     </Card.Header>
                     <Card.Body>
                         <Table responsive={true}>
-                            <thead className="text-center">
+                            <thead className="text-center tableHeader">
                                 <tr>
                                     <th>Name</th>
                                     <th>Surname</th>

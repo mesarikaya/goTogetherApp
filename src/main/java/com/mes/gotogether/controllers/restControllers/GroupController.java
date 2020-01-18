@@ -75,6 +75,7 @@ public class GroupController {
     }
     
     @DeleteMapping("/groups")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @ResponseStatus(HttpStatus.OK)
     public Mono<Void> deleteGroup(@RequestParam("groupId") String groupId) {   	
          
@@ -83,6 +84,7 @@ public class GroupController {
     }
     
     @PutMapping("/groups/members")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @ResponseStatus(HttpStatus.OK)
     public Mono<GroupSearchResponse> addGroupMember(@RequestBody GroupUser groupUser)
     {   	
@@ -99,6 +101,7 @@ public class GroupController {
     }
     
     @DeleteMapping("/groups/members")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @ResponseStatus(HttpStatus.OK)
     public Mono<GroupSearchResponse> deleteGroupMember(@RequestParam("groupId") String groupId,  @RequestParam("userId") String userId)
     {   	
@@ -113,6 +116,7 @@ public class GroupController {
     }
     
     @PutMapping("/groups/waitingList")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @ResponseStatus(HttpStatus.OK)
     public Mono<GroupSearchResponse> addToWaitingList(@RequestBody GroupUser groupUser)
     {   	 
@@ -121,6 +125,7 @@ public class GroupController {
     }
     
     @DeleteMapping("/groups/waitingList")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @ResponseStatus(HttpStatus.OK)
     public Mono<GroupSearchResponse> deleteFromWaitingList(@RequestParam("groupId") String groupId,  
                                                                                                                @RequestParam("userId") String userId, 
@@ -140,6 +145,7 @@ public class GroupController {
     }
     
     @DeleteMapping("/groups/invitationsList")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @ResponseStatus(HttpStatus.OK)
     public Mono<GroupSearchResponse> deleteFromInviteList(@RequestParam("groupId") String groupId,  
                                                                                                            @RequestParam("userId") String userId)
@@ -149,6 +155,7 @@ public class GroupController {
     }
     
     @PutMapping("/groups/invitationsList")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @ResponseStatus(HttpStatus.OK)
     public Mono<GroupSearchResponse> addToInvitesList(@RequestBody GroupUser groupUser)
     {   	

@@ -6,8 +6,7 @@ import io.jsonwebtoken.Claims;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,10 +17,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Component
 public class JWTReactiveAuthenticationManager implements ReactiveAuthenticationManager {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    // private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final SecurityUserLibraryUserDetailsService securityUserDetailsService;
     private final JWTUtil jwtTokenUtil;
@@ -31,13 +31,12 @@ public class JWTReactiveAuthenticationManager implements ReactiveAuthenticationM
                                             JWTUtil jwtTokenUtil) {
         Assert.notNull(securityUserDetailsService, "userDetailsService cannot be null");
         Assert.notNull(jwtTokenUtil, "jwtTokenUtil cannot be null");
-        System.out.println("***********IN AUTHENTICATION MANAGER*******************");
+        log.info("***********IN AUTHENTICATION MANAGER*******************");
         this.securityUserDetailsService = securityUserDetailsService;
         this.jwtTokenUtil = jwtTokenUtil;
         this.passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
-
-
+    }    
+    
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
         String authToken = authentication.getCredentials().toString();
@@ -45,30 +44,30 @@ public class JWTReactiveAuthenticationManager implements ReactiveAuthenticationM
         String username;
         try {
             username = jwtTokenUtil.getUsernameFromToken(authToken);
-        } catch (Exception e) {
-            username = null;
-        }
-        if (username != null && jwtTokenUtil.validateToken(authToken)) {
+            if (jwtTokenUtil.validateToken(authToken)) {
+                Claims claims = jwtTokenUtil.getAllClaimsFromToken(authToken);
+                List<String> rolesMap = claims.get("role", List.class);
+                List<Role> roles = new ArrayList<>();
+                for (String rolemap : rolesMap) {
+                    roles.add(Role.valueOf(rolemap));
+                }
 
-            Claims claims = jwtTokenUtil.getAllClaimsFromToken(authToken);
-            List<String> rolesMap = claims.get("role", List.class);
-            List<Role> roles = new ArrayList<>();
-            for (String rolemap : rolesMap) {
-                roles.add(Role.valueOf(rolemap));
+                log.info("HERE IN AUTHENTICATE*****: " + "- Roles: " + roles);
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                        username,
+                        null,
+                        roles.stream().map(authority -> new SimpleGrantedAuthority("ROLE_"+authority.name()))
+                                .collect(Collectors.toList())
+                );
+                log.info("Finalized auth: " + auth);
+                return Mono.just(auth);
+            }else{
+                log.info("Invalid token. Send null");
+                 return Mono.empty();
             }
-
-            System.out.println("HERE IN AUTHENTICATE*****: " + "- Roles: " + roles);
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    username,
-                    null,
-                    roles.stream().map(authority -> new SimpleGrantedAuthority("ROLE_"+authority.name()))
-                            .collect(Collectors.toList())
-            );
-
-            System.out.println("Finalized auth: " + auth);
-            return Mono.just(auth);
-        } else {
-            return Mono.empty();
+        } catch (Exception ex) {
+                log.info("Error in examining token");
+                return Mono.empty();
         }
     }
 

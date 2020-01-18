@@ -55,11 +55,13 @@ class UserSubscribedGroupsList extends React.Component<Props&PathProps,{}>{
         }
     }
     
-    public handleOnClick = async (event: React.MouseEvent<HTMLTableDataCellElement, MouseEvent>, 
+    public handleOnClick = async (event: React.MouseEvent<HTMLDivElement, MouseEvent>, 
                                   group: GroupSearchResult): Promise<void> =>{
         event.preventDefault();
-        this.props.updateSelectedGroup(event, group, group.id, this.props.token);
-        this.props.history.push('/group');
+        await Promise.all([this.props.updateSelectedGroup(event, group, group.id, this.props.token)]);
+        window.setTimeout(() =>{
+            this.props.history.push('/group');
+        }, 3000);
     }
 
     public createTable(data: GroupSearchResult[]) {
@@ -67,12 +69,13 @@ class UserSubscribedGroupsList extends React.Component<Props&PathProps,{}>{
         const rows = [];
         for (const obj in data) {
             if (data.hasOwnProperty(obj)) {
-
                 rows.push(
                     <tr key={data[obj].id}>
-                        <td align="center"
+                        <td className="text-center"
                             // tslint:disable-next-line: jsx-no-lambda
-                            onClick={(e: React.MouseEvent<HTMLTableDataCellElement, MouseEvent>) => this.handleOnClick(e, data[obj])}>{data[obj].name}</td>
+                            onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => this.handleOnClick(e, data[obj])}>
+                            {data[obj].name}
+                        </td>
                         <td align="center">
                             <ButtonToolbar className="buttonToolbar">
                                 <Button variant="danger" size="sm" 
@@ -101,7 +104,7 @@ class UserSubscribedGroupsList extends React.Component<Props&PathProps,{}>{
                     </Card.Header>
                     <Card.Body>
                         <Table responsive={true}>
-                            <thead>
+                            <thead className="tableHeader">
                                 <tr>
                                     <th className="text-center">Name</th>
                                     <th className="text-center">Action</th>

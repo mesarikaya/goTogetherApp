@@ -37,7 +37,6 @@ class RegistrationForm extends React.Component<Props, State> {
             isLoading: false,
             showResponseStatus: false,
             registrationFormFields:{
-                userName: '',
                 firstName: '',
                 middleName: '',
                 lastName: '',
@@ -79,16 +78,14 @@ class RegistrationForm extends React.Component<Props, State> {
             event.stopPropagation();
         }
 
-        this.setState({ registrationFormFields: {
-            ...this.state.registrationFormFields,
-            validated: true
-        }}); 
-
-        
-        this.setState({
+        this.setState({ 
+            registrationFormFields: {
+                    ...this.state.registrationFormFields,
+                    validated: true
+                },
             isLoading: true,
             showResponseStatus: false
-        });
+        }); 
 
         if(this.state.registrationFormFields.hasPasswordMatch){
             this.setState({ registrationFormFields: {
@@ -96,14 +93,20 @@ class RegistrationForm extends React.Component<Props, State> {
                 validated: true,
             }});
             this.props.onRegistrationSubmit(event, this.state.registrationFormFields);
-            this.setState({
-                showResponseStatus: true
-            });
         }
 
         window.setTimeout(() =>{
             this.setState({
                 isLoading: false,
+            });
+        }, 3000);
+
+        this.setState({
+            showResponseStatus: true
+        });
+
+        window.setTimeout(() =>{
+            this.setState({
                 showResponseStatus: false
             });
         }, 5000);
@@ -114,15 +117,16 @@ class RegistrationForm extends React.Component<Props, State> {
         const validated = this.state.registrationFormFields.validated;
         const isLoading = this.state.isLoading;
         const responseStatus = this.props.storeState.responseStatus;
+        const hasPasswordMatch = this.state.registrationFormFields.hasPasswordMatch;
         return (
             <React.Fragment>
                 <div className = "container mb-2 modalContainer mx-auto registrationFormContainer">
                     <div className = "row-fluid">
                         {responseStatus.type==="SUCCESS" && this.state.showResponseStatus ? 
-                            <p className="responseSuccess"> {responseStatus.message} </p> : null}
+                            <p className="responseSuccess mt-1 mb-0"> {responseStatus.message} </p> : null}
                             
                         {responseStatus.type==="FAILURE" && this.state.showResponseStatus ? 
-                            <p className="responseFailure"> {responseStatus.message} </p> : null}
+                            <p className="responseFailure mt-1 mb-0"> {responseStatus.message} </p> : null}
 
                         <Form name = "registrationForm"
                               className = "needsLoginFormValidation"
@@ -130,23 +134,13 @@ class RegistrationForm extends React.Component<Props, State> {
                               validated = {validated}
                               onSubmit = {this.handleSubmit}>
 
-                            <Form.Row className="mt-4">
+                            <Form.Row className="mt-2">
                                 <Col>
                                     <InputGroup className="LoginFormInputGroup">
                                         <Form.Control
                                             required={true}
-                                            type="userName"
-                                            id={"userName"}
-                                            name={"userName"}
-                                            placeholder="username"
-                                            onChange={this.handleChange}
-                                        />
-                                    </InputGroup>
-                                    <InputGroup className="LoginFormInputGroup">
-                                        <Form.Control
-                                            required={true}
                                             type="email"
-                                            id={"email"}
+                                            id={"registrationEmail"}
                                             name={"email"}
                                             placeholder="email address"
                                             onChange={this.handleChange}
@@ -170,7 +164,7 @@ class RegistrationForm extends React.Component<Props, State> {
                                         <Form.Control
                                             required={true}
                                             type="password"
-                                            id={"password"}
+                                            id={"registrationPassword"}
                                             name={"password"}
                                             placeholder="password"
                                             onChange={this.handleChange}
@@ -343,7 +337,8 @@ class RegistrationForm extends React.Component<Props, State> {
                                             disabled={true}>
                                             <Spinner
                                                 as="span"
-                                                animation="grow"
+                                                animation="grow" 
+                                                variant="warning"
                                                 size="sm"
                                                 role="status"
                                                 aria-hidden="true"
@@ -353,7 +348,9 @@ class RegistrationForm extends React.Component<Props, State> {
                                     <Button className="btn btn-primary submitButton"
                                             type="submit"
                                             variant="primary"
-                                            disabled={!this.state.registrationFormFields.hasPasswordMatch}>
+                                            disabled={!hasPasswordMatch 
+                                                        || isLoading
+                                                        || this.state.registrationFormFields.email.trim() === ''}>
                                         Submit
                                     </Button> 
                                 }

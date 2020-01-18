@@ -57,14 +57,16 @@ public class AppSecurityConfig {
         http
             .exceptionHandling()
             .authenticationEntryPoint((swe, e) -> {
+                log.info("Inside access entry handler");
                     return Mono.fromRunnable(() -> {
                         swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 });
             })
             .accessDeniedHandler((swe, e) -> {
-            return Mono.fromRunnable(() -> {
-                swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-            });
+                log.info("Inside access denied handler");
+                    return Mono.fromRunnable(() -> {
+                        swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                });
             }).and()
             .cors()
             .and()
@@ -82,19 +84,16 @@ public class AppSecurityConfig {
             .matchers(EndpointRequest.to("health")).permitAll()
             .matchers(EndpointRequest.to("info")).permitAll()
             .matchers(EndpointRequest.toAnyEndpoint()).hasRole(Role.ADMIN.name())
-            //.pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .pathMatchers(HttpMethod.POST, "/api/v1/users**").hasRole(Role.ADMIN.name())
             .pathMatchers(HttpMethod.DELETE, "/api/v1/users**").hasRole(Role.ADMIN.name())
-            .pathMatchers("/login**").permitAll()
-            .pathMatchers("/auth**").permitAll()
             .pathMatchers("/api/auth/login**").permitAll()
+            .pathMatchers("/api/auth/logout**").permitAll()
             .pathMatchers("/api/auth/register**").permitAll()
             .pathMatchers("/api/auth/verify**").permitAll()
+            .pathMatchers("/api/auth/verify/validate**").permitAll()
             .pathMatchers("/api/v1/groups**").permitAll()
             .anyExchange().authenticated()
             .and();
-
-
         /*
         http
             .csrf()

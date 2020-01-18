@@ -1,5 +1,9 @@
 import * as React from 'react';
 
+// import components
+import VerificationForm from './VerificationForm';
+import LoginForm from './LoginForm';
+import RegistrationForm from './RegistrationForm';
 
 // Add styling related imports
 import '../../../stylesheets/css/App.css';
@@ -8,15 +12,15 @@ import 'font-awesome/css/font-awesome.min.css';
 import '../../../stylesheets/css/login.css';
 
 // Add types
-import { UpdateAuth } from '../../../redux/actions/jwtAuthAction';
+import { UpdateAuth } from '../../../redux/actions/jwtAuthActionLogin';
 import { updateUserAccount } from '../../../redux/actions/UserPage/updateUserAccountAction';
-import LoginForm from '../Forms/LoginForm';
 import { LoginFormFields } from '../../../redux/types/userInterface/loginFormFields';
 import { Tabs, Tab, Button, Modal } from 'react-bootstrap';
-import RegistrationForm from '../Forms/RegistrationForm';
 import { RegistrationFormFields } from 'src/redux/types/userInterface/registrationFormFields';
 import { registerAccount } from 'src/redux/actions/registerAccountAction';
 import { AppState } from 'src/redux/reducers/rootReducer';
+import { sendAccountVerification } from 'src/redux/actions/sendAccountVerificationAction';
+
 
 export interface Props {   
     storeState: AppState;
@@ -25,6 +29,7 @@ export interface Props {
     onLoginSubmit: typeof UpdateAuth;
     onRegistrationSubmit: typeof registerAccount;
     onGetUserAccountDetails: typeof updateUserAccount;
+    onVerificationSubmit: typeof sendAccountVerification;
 };
 
 export interface State {
@@ -54,7 +59,6 @@ class LoginOrRegister extends React.Component<Props, State> {
         this.handleModalShow = this.handleModalShow.bind(this);
         this.handleModalClose = this.handleModalClose.bind(this);
         this.handleRememberMeChange = this.handleRememberMeChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
     }
 
@@ -62,12 +66,17 @@ class LoginOrRegister extends React.Component<Props, State> {
         this.setState({ show: false });
     }
 
+    public setModalClose(status: boolean) {
+        this.setState({ show: status });
+    }
+
     public handleModalShow() {
         this.setState({ show: true });
     }
 
     public handleRememberMeChange(checked: boolean) {
-        this.setState({ loginFormFields: {
+        this.setState({ 
+            loginFormFields: {
                 ...this.state.loginFormFields,
                 rememberMe: checked
             }
@@ -85,34 +94,14 @@ class LoginOrRegister extends React.Component<Props, State> {
         });
     }
 
-    public handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
-
-        // TODO: Add button disable
-        const form = event.currentTarget;
-        if (form.checkValidity() === false) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-
-        this.setState({ loginFormFields: {
-            ...this.state.loginFormFields,
-            validated: true
-        }});
-
-        // TODO: Deactivate Button disable
-        
-        // MAKE AN AJAX CALL
-        this.props.onLoginSubmit(event, this.state.loginFormFields);
-    };
-
     public render() {
 
         return (
           <React.Fragment>
             <Button className="navButton signInButton" variant="link" onClick={this.handleModalShow} >
-                  <i className="fas fa-sign-in-alt">
+                <i className="fas fa-sign-in-alt">
                     <strong id="icons"> Log in/Register</strong>
-                  </i>
+                </i>
             </Button>
             
             <Modal dialogClassName={"modalDialog"} 
@@ -129,6 +118,8 @@ class LoginOrRegister extends React.Component<Props, State> {
                                                loginFormFields={this.props.loginFormFields}
                                                onLoginSubmit={this.props.onLoginSubmit}
                                                onGetUserAccountDetails={this.props.onGetUserAccountDetails}
+                                               // tslint:disable-next-line: jsx-no-lambda
+                                               onModalStateSet={(status:boolean) => this.setModalClose(status)}
                                     />
                                 </Tab>
                                 <Tab eventKey="register" title="Register" id="registerTab">
@@ -136,14 +127,14 @@ class LoginOrRegister extends React.Component<Props, State> {
                                                       storeState={this.props.storeState}
                                                       registrationFormFields={this.props.registrationFormFields}
                                                       onRegistrationSubmit={this.props.onRegistrationSubmit}
-                                                      />                    
+                                    />                    
                                 </Tab>
                                 <Tab eventKey="contact" title="Contact" id="contactTab">
-                                    <LoginForm isLoading={false}
-                                               storeState={this.props.storeState}
-                                               loginFormFields={this.props.loginFormFields}
-                                               onLoginSubmit={this.props.onLoginSubmit}
-                                               onGetUserAccountDetails={this.props.onGetUserAccountDetails}
+                                    <VerificationForm isLoading={false}
+                                                      storeState={this.props.storeState}
+                                                      onVerificationSubmit={this.props.onVerificationSubmit}
+                                                      // tslint:disable-next-line: jsx-no-lambda
+                                                      onModalStateSet={(status:boolean) => this.setModalClose(status)}
                                     />
                                 </Tab>
                             </Tabs>

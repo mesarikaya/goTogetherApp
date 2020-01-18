@@ -1,63 +1,74 @@
 import axios from "axios";
 axios.defaults.withCredentials = true;
 import { Dispatch } from "redux";
-import { RegistrationFormFields } from '../types/userInterface/registrationFormFields';;
+import { JwtAuthActionTypes }from '../types/action/jwtAuthActionType';
 import { UpdateResponseStatusActionType } from '../types/action/updateResponseStatusActionType';
-import ResponseStatus from '../types/userInterface/responseStatus';
+import { SecurityState } from '../types/system/securityState';
 
 // Set the API url for back end calls
 const url = process.env.REACT_APP_NODE_ENV === 'production' ? "/api/auth/" : "http://localhost:8080/api/auth/";
 
 /**
- * Make account registration request
+ * Make GET request and dipatch the image data to be shown via redux  
  * @param e HTML Form Event
- * @param formFields Registration Form input data
+ * @param params query parameters
  */
-export function registerAccount(event: React.FormEvent<HTMLFormElement>, formFields: RegistrationFormFields) {
+export function onLogoutUpdateAuth(event: React.MouseEvent<HTMLButtonElement, MouseEvent>, 
+                                   currentState: SecurityState) {
     
     if (event !== null) { event.preventDefault(); }
+    
+    const params = {
+        userName: currentState.userName,
+        token: currentState.token
+    };
 
-    // Set data to send with Post request
-    const data = formFields;
-    return ((dispatch: Dispatch<UpdateResponseStatusActionType>) => {
-        return (axios.post(`${url}register`, data, { 
+    const payload = {
+        cookie: "authenticated cookie",
+        loggedIn: false,
+        userName: '',
+        token: ""
+    };
+
+    return ((dispatch: Dispatch<JwtAuthActionTypes|UpdateResponseStatusActionType>) => {
+        return (axios.get(`${url}logout`, { 
             headers: {
                 Accept: 'application/json',
+                Authorization: "Bearer " + currentState.token,
                 'Content-Type': 'application/json',
                 Cache: "no-cache"
               },
+              params,
               withCredentials: true
+            // TODO: Change the response type from any to a proper one soon
         }).then((response:any) => {
             
-            let payloads: ResponseStatus = {
-                type: "SUCCESS",
-                message: "Request is in progress!"
-            };
-
+            
+            // tslint:disable-next-line: no-console
+            console.log("Status is:" + response.status);
             // Depending on response status, allow or not for login
             if (response.status === 200) {
-
-                const responseData = response.data;
-                const responseMessage = responseData.message;
-                const responseType = responseData.type;
-                
-                payloads = {
-                    type: responseType,
-                    message: responseMessage
+                dispatch({ type: 'AUTH_REQUEST', payload });
+                const payloads = {
+                    type: "SUCCESS",
+                    message: "Log out is successful!"
                 };
-
-                return dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });        
+                dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });   
             }
             else {
-                payloads = {
+
+                dispatch({ type: 'AUTH_REQUEST', payload });
+
+                const payloads = {
                     type: "FAILURE",
                     message: response.statusText
                 };                
-
-                return dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });  
+                dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });  
             }
-        })
-        .catch((error: any) => {
+        }).catch((error: any) => {
+            
+            dispatch({ type: 'AUTH_REQUEST', payload });
+
             let payloads = {
                 type: "FAILURE",
                 message: "Server error"
@@ -78,7 +89,7 @@ export function registerAccount(event: React.FormEvent<HTMLFormElement>, formFie
             }
 
 
-            return dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads }); 
+            return dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });  
         }));
     });
 };

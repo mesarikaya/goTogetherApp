@@ -1,5 +1,11 @@
 package com.mes.gotogether.security.jwt;
 
+import com.mes.gotogether.security.domain.SecurityUserLibrary;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Clock;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.DefaultClock;
 import java.io.Serializable;
 import java.security.Key;
 import java.util.Base64;
@@ -7,21 +13,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
 import javax.crypto.spec.SecretKeySpec;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-
-import com.mes.gotogether.security.domain.SecurityUserLibrary;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Clock;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.impl.DefaultClock;
 
 @Component
 public class JWTUtil implements Serializable  {
@@ -31,20 +27,15 @@ public class JWTUtil implements Serializable  {
     static final String CLAIM_KEY_USERNAME = "sub";
     static final String CLAIM_KEY_AUDIENCE = "aud";
     static final String CLAIM_KEY_CREATED = "iat";
-
     static final String AUDIENCE_UNKNOWN = "unknown";
     static final String AUDIENCE_WEB = "web";
     static final String AUDIENCE_MOBILE = "mobile";
     static final String AUDIENCE_TABLET = "tablet";
-
+    
     private Clock clock = DefaultClock.INSTANCE;
-
     @Value("${jwt.secret}")
     private String secret;
-
-    // We will sign our JWT with our ApiKey secret
     private Key signingKey;
-
     @Value("${jwt.expiration}")
     private Long expiration;
 
@@ -118,17 +109,15 @@ public class JWTUtil implements Serializable  {
 
         final Date createdDate = clock.now();
         final Date expirationDate = calculateExpirationDate(createdDate);
-        System.out.println("Claims: " + claims);
-        System.out.println("Token details: " + createdDate + " - " + expirationDate);
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
-                .setAudience(audience)
-                .setIssuedAt(createdDate)
-                .setExpiration(expirationDate)
-                .signWith(signingKey, SignatureAlgorithm.HS512)
-                .compact();
+                            .setClaims(claims)
+                            .setSubject(subject)
+                            .setAudience(audience)
+                            .setIssuedAt(createdDate)
+                            .setExpiration(expirationDate)
+                            .signWith(signingKey, SignatureAlgorithm.HS512)
+                            .compact();
     }
 
     public Boolean canTokenBeRefreshed(String token, Date lastPasswordReset) {
@@ -146,9 +135,9 @@ public class JWTUtil implements Serializable  {
         claims.setExpiration(expirationDate);
 
         return Jwts.builder()
-                .setClaims(claims)
-                .signWith(signingKey, SignatureAlgorithm.HS512 )
-                .compact();
+                            .setClaims(claims)
+                            .signWith(signingKey, SignatureAlgorithm.HS512 )
+                            .compact();
     }
 
     public Boolean validateToken(String token) {

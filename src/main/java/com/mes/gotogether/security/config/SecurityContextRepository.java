@@ -1,6 +1,7 @@
 package com.mes.gotogether.security.config;
 
 import com.mes.gotogether.security.jwt.JWTReactiveAuthenticationManager;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Component
 public class SecurityContextRepository implements ServerSecurityContextRepository {
 
@@ -29,28 +31,28 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
     @Override
     public Mono<SecurityContext> load(ServerWebExchange swe) {
 
-        System.out.println("Load security context Server Exchange load");
+        log.info("Load security context Server Exchange load");
         ServerHttpRequest request = swe.getRequest();
-        System.out.println("Request is:" + request.getHeaders());
+        log.info("Request is:" + request.getHeaders());
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        System.out.println("Auth header: " + authHeader);
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-
-            String authToken = authHeader.substring(7);
-            Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
-
-            System.out.println("Auth is set: " + auth);
-            return this.JWTReactiveAuthenticationManager.authenticate(auth).map((authentication) -> {
-                System.out.println("Calling authenticate method");
-                SecurityContextImpl scImpl =  new SecurityContextImpl(authentication);
-                System.out.println("In auth manager map: " + scImpl);
-                return scImpl;
-            });
-        } else {
-            System.out.println("********WRONG SECURITY IS MISSED*********8");
-            return Mono.empty();
+        log.info("Auth header: " + authHeader);
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String authToken = authHeader.substring(7);
+                Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
+               log.info("Auth is set: " + auth);
+                return this.JWTReactiveAuthenticationManager.authenticate(auth).map((authentication) -> {
+                    log.info("Calling authenticate method");
+                    SecurityContextImpl scImpl =  new SecurityContextImpl(authentication);
+                    log.info("In auth manager map: " + scImpl);
+                    return scImpl;
+                });
+            } else {
+                log.info("********WRONG CREDENTIALS OR SECURITY IS MISSED*********");
+                return Mono.empty();
+            }
+        }catch(Exception ex){
+            return Mono.error(new RuntimeException(ex.getMessage()));
         }
     }
-
-
 }

@@ -1,5 +1,6 @@
 .groupCard {
     min-width: calc(90%) !important;
+    border-radius: 2em;
 }
 
 .card-deck .card {
@@ -28,6 +29,11 @@
 
 .fa-7x{
     font-size: 2.5rem;
+}
+
+.groupCard {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-bottom: 0.5em solid #66cc66;
 }
 
 /* PAGE BREAKS AND DEFAULTS MODIFICATION FOR CARD COLUMN RESPONSIVENESS

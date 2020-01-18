@@ -80,6 +80,15 @@
     border-color: rgba(196, 230, 224, 0.856);
 }
 
+.submitButton:disabled {
+    border-radius: 2rem;
+    background-color: rgba(196, 230, 224, 0.856);
+    border-color: rgba(196, 230, 224, 0.856);
+}
+
+.form-control{
+    max-width: 100%;
+}
 /* SWITCH CHECKBOXES STYLES */
 /* SOURCE: https://gist.github.com/dciccale/1367918 */
 /* No more blue blur border */

@@ -89,8 +89,8 @@ public class AddressServiceImpl implements AddressService {
                     .flatMap(addressResult -> {
                             addressResult.setId(address.getId());
                             return this.setAddressLatitudeAndLongitude(addressResult)
-                                    .flatMap(returnedAddress->addressRepository.save(returnedAddress))
-                                    .switchIfEmpty(Mono.defer(()-> Mono.empty()));
+                                             .flatMap(returnedAddress->addressRepository.save(returnedAddress))
+                                             .switchIfEmpty(Mono.defer(()-> Mono.empty()));
                     })
                     .switchIfEmpty(Mono.defer(() -> {
                         log.debug("Creating a new Address");

@@ -25,8 +25,6 @@ public final class GroupSearchResponse {
                     private final InvitationList invitationList;
 	
 	public GroupSearchResponse(Group group) {
-		
-                            log.info("*******CONVERTING TO GROUP RESPONSE******");
                             Objects.requireNonNull(group);
                             Objects.requireNonNull(group.getOriginAddress());
                             Objects.requireNonNull(group.getDestinationAddress());
@@ -56,8 +54,6 @@ public final class GroupSearchResponse {
                                                                                                                                 member.getUserId(),
                                                                                                                                 member.getAddress().toString()))
                                                                                                                         .collect(toCollection(HashSet::new)));
-
-                            log.info("Created member is: " + this.members);
 	}
 
 	@Getter

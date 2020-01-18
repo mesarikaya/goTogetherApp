@@ -6,6 +6,7 @@ import Container from './container/Container';
 import './stylesheets/css/index.css';
 import registerServiceWorker from './registerServiceWorker';
 import {Route, Router } from "react-router";
+// import { unregister } from './registerServiceWorker';
 
 ReactDOM.render(
     (<Provider store={store}>
@@ -16,3 +17,4 @@ ReactDOM.render(
     document.getElementById('root') as HTMLElement
 );
 registerServiceWorker();
+// unregister();

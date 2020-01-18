@@ -9,13 +9,13 @@ import 'font-awesome/css/font-awesome.min.css';
 import carouselPart1 from '../../../stylesheets/images/carouselImagePart1.png';
 import carouselPart2 from '../../../stylesheets/images/carouselImagePart2.png';
 import carouselPart3 from '../../../stylesheets/images/carouselImagePart3.png';
-import { Carousel, Button, CardDeck} from 'react-bootstrap';
+import { Carousel, Button, CardDeck, Spinner} from 'react-bootstrap';
 
 // import child component
 import GroupSearchForm from '../Forms/GroupSearchForm';
 import NavigationBar from '../Navigation/NavigationBar';
 import { LoginFormFields } from '../../../redux/types/userInterface/loginFormFields';
-import GroupCard from '../Cards/GroupCard';
+import GroupCard from './GroupPage/GroupCard';
 
 // import types
 import { GroupSearchFormFields } from '../../../redux/types/userInterface/groupSearchFormFields';
@@ -25,10 +25,12 @@ import { SearchGroups } from '../../../redux/actions/groupSearchAction';
 import { GroupSearchResult } from '../../../redux/types/userInterface/groupSearchResult';
 import { updateSelectedGroup } from '../../../redux/actions/GroupPage/updateSelectedGroupAction';
 import { updateUserAccount } from 'src/redux/actions/UserPage/updateUserAccountAction';
-import { UpdateAuth } from 'src/redux/actions/jwtAuthAction';
+import { UpdateAuth } from 'src/redux/actions/jwtAuthActionLogin';
 import { RegistrationFormFields } from 'src/redux/types/userInterface/registrationFormFields';
 import { registerAccount } from 'src/redux/actions/registerAccountAction';
 import { AppState } from 'src/redux/reducers/rootReducer';
+import { sendAccountVerification } from '../../../redux/actions/sendAccountVerificationAction';
+import { onLogoutUpdateAuth } from 'src/redux/actions/jwtAuthActionLogout';
 
 export interface Props {
     isLoading: boolean;
@@ -41,12 +43,14 @@ export interface Props {
         groups: GroupSearchResult[],
         page: number
     };
-    onLoginSubmit: typeof UpdateAuth,
+    onLoginSubmit: typeof UpdateAuth;
     onRegistrationSubmit: typeof registerAccount;
     onSubmit: typeof SearchGroups;
+    onVerificationSubmit: typeof sendAccountVerification;
+    onGetUserAccountDetails: typeof updateUserAccount;
     updateSelectedGroup: typeof updateSelectedGroup;
     updateGroupSearchFormFields: (formFields: GroupSearchFormFields) => void;
-    onGetUserAccountDetails: typeof updateUserAccount;
+    onLogout: typeof onLogoutUpdateAuth;
 };
 
 export interface State {
@@ -89,12 +93,14 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
         this.handleGroupSearchFormUpdate = this.handleGroupSearchFormUpdate.bind(this);
     }
 
-    public loadMore = async (event: any): Promise<void> => {  
+    public loadMore = async (event: any): Promise<void> => { 
+        this.isLoading(true); 
         this.props.onSubmit(null, 
                             this.state.groupSearchFormFields, 
                             this.state.groupSearchResults.groups,
                             this.state.groupSearchResults.page,
                             this.state.storeState.system.token);
+        this.isLoading(false);                           
     }
 
     public handleGroupSearchFormUpdate = (formFields: GroupSearchFormFields): void => {
@@ -116,7 +122,54 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
         }
     }
 
+    public isLoading(status: boolean) {
+        this.setState({ isLoading: status });
+    }
+
+    public loadTable = (groupSearchResult: GroupSearchResult[]) => {
+        if (this.state.isLoading===true){
+            return (
+                <div>
+                    <Spinner
+                        as="span"
+                        animation="grow" 
+                        variant="warning"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                    />
+                <p>Processing</p>
+            </div>);
+        }else{
+            if (Object.keys(this.state.storeState.groupSearchResults).length>0){
+                    return (
+                    <div className="row justify-content-center">
+                        <CardDeck>
+                            {Object.keys(groupSearchResult).map((key) => (
+                                <GroupCard 
+                                    key={groupSearchResult[key]} 
+                                    groupIndex={key}
+                                    name={groupSearchResult[key].name} 
+                                    groupDetails={groupSearchResult[key].groupDetails}
+                                    members={groupSearchResult[key].members}
+                                    group={groupSearchResult[key]}
+                                    token={this.state.storeState.system.token}
+                                    updateSelectedGroup={this.props.updateSelectedGroup}
+                                />
+                            ))}
+                        </CardDeck>
+                        {this.state.storeState.groupSearchResults.page!==0 ? 
+                        <Button className="pull-right mr-2" type="button" onClick={this.loadMore}> Load More... </Button>:
+                        null}
+                    </div>);
+            }else{
+                return <div className="row justify-content-center">No Records found</div>;
+            }
+        }
+    }
+
     public render() {
+
         const groupSearchResult = this.state.groupSearchResults.groups;
         return (
           <div className="App">
@@ -126,6 +179,8 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
                            onLoginSubmit={this.props.onLoginSubmit}
                            onRegistrationSubmit={this.props.onRegistrationSubmit}
                            onGetUserAccountDetails={this.props.onGetUserAccountDetails}
+                           onVerificationSubmit={this.props.onVerificationSubmit}
+                           onLogout={this.props.onLogout}
             />
             <div className="container pageContainer">
                 <div className="row align-items-center">
@@ -174,6 +229,8 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
                                         token={this.state.storeState.system.token} 
                                         updateSearchFormFields={this.handleGroupSearchFormUpdate}
                                         onSubmit={this.props.onSubmit}
+                                        // tslint:disable-next-line: jsx-no-lambda
+                                        isLoading={(status:boolean) => this.isLoading(status)}
                                     />
                                 </div>
                             </div>
@@ -183,7 +240,8 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
 
                 <br />
                 
-                <div className="container">                       
+                <div className="container"> 
+
                     {Object.keys(groupSearchResult).length>0 ? (
                     <div>
                         <CardDeck>
@@ -202,9 +260,9 @@ class App extends React.Component<Props & RouteComponentProps<PathProps>, State>
                             }
                        </CardDeck>
                        {this.state.groupSearchResults.page !== 0 ? 
-                            <Button type="button" onClick={this.loadMore}> Load More... </Button>: null
+                            <Button className="pull-right mr-2" type="button" onClick={this.loadMore}> Load More... </Button>: null
                        }
-                    </div>): null
+                    </div>): <p>No Records found</p>
                     }        
                 </div>
             </div>
@@ -233,6 +291,10 @@ const mapDispatchToProps = (dispatch: any) => {
             e: React.FormEvent<HTMLFormElement>, 
             formFields: RegistrationFormFields
         ) => dispatch(registerAccount(e, formFields)),
+        onVerificationSubmit: (
+            e: React.FormEvent<HTMLFormElement>, 
+            formFields: {userName: string}
+        ) => dispatch(sendAccountVerification(e, formFields)),
         onSubmit: (
             e: React.FormEvent<HTMLFormElement>, 
             formFields: GroupSearchFormFields,
@@ -248,8 +310,11 @@ const mapDispatchToProps = (dispatch: any) => {
             event: React.MouseEvent<HTMLDivElement, MouseEvent>,
             currentGroup: GroupSearchResult,
             groupId: string,
-            token: string) => dispatch(updateSelectedGroup(event, currentGroup, groupId, token))
-    }
+            token: string) => dispatch(updateSelectedGroup(event, currentGroup, groupId, token)),
+        onLogout: (
+            event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+            currentSecurityState: SecurityState) => dispatch(onLogoutUpdateAuth(event, currentSecurityState))
+        }
 }
 
 export  default withRouter(connect(mapStateToProps, mapDispatchToProps)(App));

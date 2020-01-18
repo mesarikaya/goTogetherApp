@@ -2,12 +2,12 @@ import * as React from 'react';
 
 // Import types
 import { withRouter, RouteComponentProps } from 'react-router';
-import { GroupSearchResult } from '../../../redux/types/userInterface/groupSearchResult';
+import { GroupSearchResult } from '../../../../redux/types/userInterface/groupSearchResult';
 import { updateWaitingList } from 'src/redux/actions/GroupPage/updateWaitingListAction';
 
 // Styling imports
 import { Card, Button, Table } from 'react-bootstrap';
-import '../../../stylesheets/css/cards/groupCard.css';
+import '../../../../stylesheets/css/cards/groupCard.css';
 import { updateSelectedGroup } from 'src/redux/actions/GroupPage/updateSelectedGroupAction';
 
 interface Props {
@@ -37,8 +37,10 @@ class GroupSearchList extends React.Component<Props & RouteComponentProps < Path
     public handleOnClick = async (event: React.MouseEvent<HTMLDivElement, MouseEvent>, 
                                   group: GroupSearchResult): Promise<void> =>{
         event.preventDefault();
-        this.props.updateSelectedGroup(event, group, group.id, this.props.token);
-        this.props.history.push('/group');
+        await Promise.all([this.props.updateSelectedGroup(event, group, group.id, this.props.token)]);
+        window.setTimeout(() =>{
+            this.props.history.push('/group');
+        }, 3000);
     }
 
     public handleOnApply = async (event: React.MouseEvent<HTMLButtonElement>, 
@@ -97,7 +99,7 @@ class GroupSearchList extends React.Component<Props & RouteComponentProps < Path
                     </Card.Header>
                     <Card.Body>
                         <Table responsive={true}>
-                            <thead className="text-center">
+                            <thead className="text-center tableHeader">
                                 <tr>
                                     <th>Name</th>
                                     <th>Origin</th>

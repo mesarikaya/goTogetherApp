@@ -4,6 +4,7 @@ import { Dispatch } from "redux";
 import { GroupSearchFormFields } from 'src/redux/types/userInterface/groupSearchFormFields';
 import { UserSearchResult } from '../types/userInterface/userSearchResult';
 import { UserSearchActionType } from '../types/action/userSearchActionType';
+import { UpdateResponseStatusActionType } from '../types/action/updateResponseStatusActionType';
 
 // Set the API url for back end calls
 const url = process.env.REACT_APP_NODE_ENV === 'production' ? "/api/v1/" : "http://localhost:8080/api/v1/";
@@ -27,7 +28,7 @@ export function SearchUsers(event: React.FormEvent<HTMLFormElement> | null,
     // Set data to send with Post request
     const data = formFields;
     const params = new URLSearchParams();
-    const quantity = 3;
+    const quantity = 9;
     params.append('origin', data.origin);
     params.append('destination', data.destination);
     params.append('originRange', data.originRange.toString());
@@ -38,7 +39,7 @@ export function SearchUsers(event: React.FormEvent<HTMLFormElement> | null,
     // tslint:disable-next-line:no-console
     console.log('environment is', process.env.NODE_ENV);
     
-    return ((dispatch: Dispatch<UserSearchActionType>) => {
+    return ((dispatch: Dispatch<UserSearchActionType|UpdateResponseStatusActionType>) => {
         return (axios.get(`${url}users`, {
             headers: {
                 Authorization: "Bearer " + token,
@@ -50,7 +51,6 @@ export function SearchUsers(event: React.FormEvent<HTMLFormElement> | null,
             withCredentials: true
         }).then((response) => {
             
-
             let initialState: {users: UserSearchResult[], page: number} = {
                 users: existingUsers,
                 page: 0
@@ -101,20 +101,37 @@ export function SearchUsers(event: React.FormEvent<HTMLFormElement> | null,
                     }; 
                 }
                 
-                dispatch({ type: 'SEARCH_USER_REQUEST', payload });       
+                dispatch({ type: 'SEARCH_USER_REQUEST', payload }); 
+                const payloads = {
+                    type: "SUCCESS",
+                    message: "Login is successfull!"
+                };
+
+                dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });       
             }else {
-                // TODO: CREATE ERROR HANDLERS
-                // tslint:disable-next-line:no-console
-                console.log("Error in axios");
-                dispatch({ type: 'SEARCH_USER_REQUEST', payload });
+                let payloads = {
+                    type: "FAILURE",
+                    message: "Error:" + response.statusText
+                };
+                
+                if (response.status===401){
+                    payloads = {
+                        type: "FAILURE",
+                        message: "Error: Wrong credentials or UnAuthorized Action!"
+                    };
+                }
+
+                dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });  
             }
             // TODO: PUT THE RIGHT type for error inside the catch
         })
         .catch((error: any) => {
-            // handle error
-            // tslint:disable-next-line:no-console
-            console.log("Error in get is:", error.response );
-            throw (error);
+            const payloads = {
+                type: "FAILURE",
+                message: "Error:" + error
+            };
+
+            dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });  
         }));   
     });
 };

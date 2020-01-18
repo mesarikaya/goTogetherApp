@@ -3,6 +3,7 @@ axios.defaults.withCredentials = true;
 import { Dispatch } from "redux";
 import { JwtAuthActionTypes }from '../types/action/jwtAuthActionType';
 import { LoginFormFields } from 'src/redux/types/userInterface/loginFormFields';
+import { UpdateResponseStatusActionType } from '../types/action/updateResponseStatusActionType';
 
 // Set the API url for back end calls
 const url = process.env.REACT_APP_NODE_ENV === 'production' ? "/api/auth/" : "http://localhost:8080/api/auth/";
@@ -18,7 +19,7 @@ export function UpdateAuth(event: React.FormEvent<HTMLFormElement>, formFields: 
 
     // Set data to send with Post request
     const data = formFields;
-    return ((dispatch: Dispatch<JwtAuthActionTypes>) => {
+    return ((dispatch: Dispatch<JwtAuthActionTypes|UpdateResponseStatusActionType>) => {
         return (axios.post(`${url}login`, data, { 
             headers: {
                 Accept: 'application/json',
@@ -35,34 +36,56 @@ export function UpdateAuth(event: React.FormEvent<HTMLFormElement>, formFields: 
                 userName: "guest",
                 token: ''
              };
-
+            // tslint:disable-next-line: no-console
+            console.log("Status is:" + response.status);
             // Depending on response status, allow or not for login
             if (response.status === 200) {
-
                 payload = {
                     cookie: "authenticated cookie",
                     loggedIn: true,
                     userName: response.data.username,
                     token: response.data.token
                 };
+                
+                dispatch({ type: 'AUTH_REQUEST', payload });
+                const payloads = {
+                    type: "SUCCESS",
+                    message: "Log in is successfull"
+                };
 
-                dispatch({ type: 'SEND_LOGIN_REQUEST', payload });
+                dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });   
             }
             else {
 
-                // TODO: CREATE ERROR HANDLERS
-                // tslint:disable-next-line:no-console
-                console.log("Error in axios");
-                dispatch({ type: 'SEND_LOGIN_REQUEST', payload });
+                const payloads = {
+                    type: "FAILURE",
+                    message: response.statusText
+                };                
+
+                dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });  
             }
-        // TODO: PUT THE RIGHT type for error inside the catch
-    })
-    .catch((error: any) => {
-        // handle error
-        // tslint:disable-next-line:no-console
-        console.log("Error in get is:", error.response);
-        throw (error);
-    }));
-       
+        }).catch((error: any) => {
+            
+            let payloads = {
+                type: "FAILURE",
+                message: "Server error"
+            };
+
+            if(error.response.status!==null || error.response.status!==undefined){
+                if (error.response.status === 401) {
+                    payloads = {
+                        type: "FAILURE",
+                        message: "Error: Wrong credentials or Unauthorized Action!"
+                    };
+                }else if(error.response.statusText!==null || error.response.statusText!==undefined){
+                    payloads = {
+                        type: "FAILURE",
+                        message: error.response.statusText
+                    };
+                }
+            }
+
+            return dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });  
+        }));
     });
 };

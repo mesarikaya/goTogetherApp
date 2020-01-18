@@ -19,10 +19,12 @@ export interface Props {
     token: string;
     onSubmit: typeof SearchGroups | typeof SearchUsers;
     updateSearchFormFields: (formFields: GroupSearchFormFields) => void;
+    isLoading: (status:boolean)=>void;
 };
 
 export interface State {
     validated: boolean;
+    isLoading: boolean;
 };
 
 const MAX_RANGES=1000;
@@ -35,7 +37,10 @@ class GroupSearchForm extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
-        this.state = { validated: false };
+        this.state = { 
+            validated: false,
+            isLoading: false
+        };
 
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
@@ -56,13 +61,22 @@ class GroupSearchForm extends React.Component<Props, State> {
 
         // TODO: Add button disable
         submitForm(event);
-        this.setState({ validated: true });
+        this.setState({ 
+            validated: true,
+            isLoading: true
+        });
 
-        // TODO: Deactivate Button -- disable
-        
-        // MAKE AN AJAX CALL
-        this.props.onSubmit(event, this.props.formFields, [], this.props.page, this.props.token);
-        // TODO: VALIDATE ON THE REST CONTROLLER AND RETURN ERROR OR THE SEARCH STATUS AND SAVE COOKIE
+        this.props.isLoading(true);
+
+        this.props.onSubmit(event, this.props.formFields, [], this.props.page, this.props.token); 
+
+        window.setTimeout(() =>{
+            this.setState({
+                isLoading: false,
+            });
+            this.props.isLoading(false);
+        }, 2000);
+
     };
 
     public decrease = (name: string) => {
@@ -126,6 +140,7 @@ class GroupSearchForm extends React.Component<Props, State> {
     public render() {
 
         const validated = this.state.validated;
+        const isLoading = this.state.isLoading;
         return (
           <React.Fragment>
             <Form name="groupSearchForm" className="groupSearchFormValidation text-center" 
@@ -195,7 +210,23 @@ class GroupSearchForm extends React.Component<Props, State> {
                         </Form.Group>
                     </InputGroup>
                 </Form.Row>
-                <Button size="lg" type="submit"> Search </Button>
+                {isLoading===true ? 
+                    <Button className="btn btn-primary disabledSubmitButton"
+                            type="submit"
+                            variant="primary"
+                            disabled={true}>
+                            Processing...
+                    </Button> :
+                    <Button className="btn btn-primary submitButton"
+                            type="submit"
+                            variant="primary"
+                            size="lg"
+                            disabled={isLoading 
+                                        || this.props.formFields.destination.trim() === '' 
+                                        || this.props.formFields.origin.trim() === ''}>
+                        Submit
+                    </Button> 
+                }
             </Form>
           </React.Fragment>
         );

@@ -1,7 +1,6 @@
 import axios from "axios";
 axios.defaults.withCredentials = true;
 import { Dispatch } from "redux";
-import { RegistrationFormFields } from '../types/userInterface/registrationFormFields';;
 import { UpdateResponseStatusActionType } from '../types/action/updateResponseStatusActionType';
 import ResponseStatus from '../types/userInterface/responseStatus';
 
@@ -9,23 +8,23 @@ import ResponseStatus from '../types/userInterface/responseStatus';
 const url = process.env.REACT_APP_NODE_ENV === 'production' ? "/api/auth/" : "http://localhost:8080/api/auth/";
 
 /**
- * Make account registration request
+ * Validate verification token
  * @param e HTML Form Event
- * @param formFields Registration Form input data
+ * @param userName user id to verify
+ * @param token verification token
  */
-export function registerAccount(event: React.FormEvent<HTMLFormElement>, formFields: RegistrationFormFields) {
+export function validateVerificationToken(params: any) {
     
-    if (event !== null) { event.preventDefault(); }
-
-    // Set data to send with Post request
-    const data = formFields;
+    // tslint:disable-next-line: no-console
+    console.log("Dispatching verification token with params:", params);
     return ((dispatch: Dispatch<UpdateResponseStatusActionType>) => {
-        return (axios.post(`${url}register`, data, { 
+        return (axios.get(`${url}verify/validate`, { 
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
                 Cache: "no-cache"
               },
+              params,
               withCredentials: true
         }).then((response:any) => {
             
@@ -77,6 +76,7 @@ export function registerAccount(event: React.FormEvent<HTMLFormElement>, formFie
                 }
             }
 
+            return dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads });  
 
             return dispatch({ type: 'UPDATE_RESPONSE_STATUS_REQUEST', payloads }); 
         }));

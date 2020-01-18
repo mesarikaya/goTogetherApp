@@ -1,10 +1,10 @@
 import { SecurityState } from "../system/securityState";
 
-export const SEND_LOGIN_REQUEST = 'SEND_LOGIN_REQUEST';
+export const AUTH_REQUEST = 'AUTH_REQUEST';
 
-interface SendLoginRequest {
-    type: typeof SEND_LOGIN_REQUEST
+interface AuthRequest {
+    type: typeof AUTH_REQUEST
     payload: SecurityState
 }
 
-export type JwtAuthActionTypes = SendLoginRequest;
+export type JwtAuthActionTypes = AuthRequest;

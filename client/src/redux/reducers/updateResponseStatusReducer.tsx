@@ -17,8 +17,8 @@ export function updateResponseStatusReducer(
             return Object.assign({}, 
                                  state, 
                                  {
-                                    type: action.payload.type,
-                                    message: action.payload.message
+                                    type: action.payloads.type,
+                                    message: action.payloads.message
                                  });
         default:
             return state;

@@ -70,29 +70,25 @@ public class UserServiceImpl implements UserService {
 
         // Check if new user is null, empty cases
         if (!Objects.isNull(user)){
-            log.debug("REQUESTING SAVE OR UPDATE with  user: " + user);
-            // Check if the user exists (By email and oauthId)
-            // Check if user exists, if so, update. Otherwise create
-            Sort sort = new Sort(Sort.Direction.ASC, "id"); 
-            return userRepository.findByUserId(user.getUserId(), sort)
-                                                .flatMap(userInDb -> {
-                                                    log.debug("user in db is: " + userInDb);
-                                                    log.info("Update the user");
-                                                    user.setId(userInDb.getId());
-                                                    log.info("USER in repository: " + user);
-                                                    return userRepository.save(user);
-                                                })
-                                                .switchIfEmpty(Mono.defer(() -> {
-                                                    log.info("Creating a new User");
-                                                    log.info("USER in repository: " + user);
-                                                    return this.createUser(user);
-                                                }));
-
-            // TODO: CREATE SUCCESS HANDLER AND CONNECT ON SUCCSES CASE
-            // TODO: CREATE AN ERROR HANDLER AND CONNECT ON ERROR CASE
+            if (!Objects.isNull(user.getUserId())){
+                return this.createUser(user);
+            } else{
+                Sort sort = new Sort(Sort.Direction.ASC, "id");
+                return userRepository.findByUserId(user.getUserId(), sort)
+                                                    .flatMap(userInDb -> {
+                                                        log.debug("user in db is: " + userInDb);
+                                                        log.info("Update the user");
+                                                        user.setId(userInDb.getId());
+                                                        log.info("USER in repository: " + user);
+                                                        return userRepository.save(user);
+                                                    })
+                                                    .switchIfEmpty(Mono.defer(() -> {
+                                                        log.info("Creating a new User");
+                                                        log.info("USER in repository: " + user);
+                                                        return this.createUser(user);
+                                                     }));
+            }
         }else{
-
-            // TODO: CREATE ERROR HANDLERS
             log.info("A Null user data is entered. Do not process!");
             return Mono.empty();
         }

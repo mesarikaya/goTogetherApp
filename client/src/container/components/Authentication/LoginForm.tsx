@@ -8,10 +8,10 @@ import 'font-awesome/css/font-awesome.min.css';
 import '../../../stylesheets/css/login.css';
 
 // Add types
-import { UpdateAuth } from '../../../redux/actions/jwtAuthAction';
+import { UpdateAuth } from '../../../redux/actions/jwtAuthActionLogin';
 import { updateUserAccount } from '../../../redux/actions/UserPage/updateUserAccountAction';
 import { LoginFormFields } from '../../../redux/types/userInterface/loginFormFields';
-import { Form, InputGroup } from 'react-bootstrap';
+import { Form, InputGroup, Spinner, Button } from 'react-bootstrap';
 import { AppState } from 'src/redux/reducers/rootReducer';
 
 export interface Props {
@@ -20,10 +20,12 @@ export interface Props {
     loginFormFields: LoginFormFields;
     onLoginSubmit: typeof UpdateAuth;
     onGetUserAccountDetails: typeof updateUserAccount;
+    onModalStateSet: (status:boolean)=>void;
 };
 
 export interface State {
-    isLoading: false;
+    isLoading: boolean;
+    showResponseStatus: boolean;
     loginFormFields: LoginFormFields;
 };
 
@@ -36,6 +38,7 @@ class LoginForm extends React.Component<Props, State> {
 
         this.state = {
             isLoading: false,
+            showResponseStatus: false,
             loginFormFields: {
                 userName: '',
                 password: '',
@@ -77,23 +80,53 @@ class LoginForm extends React.Component<Props, State> {
             event.stopPropagation();
         }
 
-        this.setState({ loginFormFields: {
-            ...this.state.loginFormFields,
-            validated: true
-        }});
+        this.setState({ 
+            loginFormFields: {
+                ...this.state.loginFormFields,
+                validated: true
+            },
+            isLoading: true,
+            showResponseStatus: false
+        });
 
         // TODO: Deactivate Button disable
         
         // MAKE AN AJAX CALL
         this.props.onLoginSubmit(event, this.state.loginFormFields);
+        
+        window.setTimeout(() =>{
+            this.setState({
+                isLoading: false,
+            });
+        }, 2000);
+
+        this.setState({
+            showResponseStatus: true
+        });
+
+        window.setTimeout(() =>{
+            this.setState({
+                showResponseStatus: false
+            });
+            if (this.props.storeState.responseStatus.type.valueOf() === 'SUCCESS'){
+                this.props.onModalStateSet(false);
+            }
+        }, 3000);
     };
 
     public render() {
 
         const validated = this.state.loginFormFields.validated;
+        const isLoading = this.state.isLoading;
+        const responseStatus = this.props.storeState.responseStatus;
         return (
             <React.Fragment>
                 <div className="container mb-2 modalContainer mx-auto loginFormContainer">
+                        {responseStatus.type==="SUCCESS" && this.state.showResponseStatus ? 
+                            <p className="responseSuccess mt-1 mb-0"> {responseStatus.message} </p> : null}
+                            
+                        {responseStatus.type==="FAILURE" && this.state.showResponseStatus ? 
+                            <p className="responseFailure mt-1 mb-0"> {responseStatus.message} </p> : null}
                     <div className="row-fluid">
                         <Form name="loginForm" 
                               className="needsLoginFormValidation"
@@ -103,13 +136,13 @@ class LoginForm extends React.Component<Props, State> {
 
                             <div className="error" />
 
-                            <Form.Row className="mt-4">
+                            <Form.Row className="mt-2">
                                 <InputGroup className="LoginFormInputGroup">
                                     <Form.Control
                                         required={true}
                                         type="email"
-                                        id={"username"}
-                                        name={"username"}
+                                        id={"userName"}
+                                        name={"userName"}
                                         placeholder="username"
                                         onChange={this.handleChange}
                                     />
@@ -160,9 +193,30 @@ class LoginForm extends React.Component<Props, State> {
                             </div>
 
                             <div className="col text-center my-auto">
-                                <button className="btn btn-primary submitButton" type="submit">
-                                    Submit
-                                </button>
+                                {isLoading===true ? 
+                                    <Button className="btn btn-primary disabledSubmitButton"
+                                            type="submit"
+                                            variant="primary"
+                                            disabled={true}>
+                                            <Spinner
+                                                as="span"
+                                                animation="grow" 
+                                                variant="warning"
+                                                size="sm"
+                                                role="status"
+                                                aria-hidden="true"
+                                            /> 
+                                            Processing...
+                                    </Button> :
+                                    <Button className="btn btn-primary submitButton"
+                                            type="submit"
+                                            variant="primary"
+                                            disabled={isLoading 
+                                                        || this.state.loginFormFields.userName.trim() === '' 
+                                                        || this.state.loginFormFields.password.trim() === ''}>
+                                        Submit
+                                    </Button> 
+                                }
                             </div>
                         </Form>
                     </div>

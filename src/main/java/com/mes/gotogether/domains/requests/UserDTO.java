@@ -15,8 +15,6 @@ import lombok.ToString;
 public final class UserDTO {
     
     @NotNull
-    private String userName;
-    @NotNull
     private String firstName;
     @NotNull
     private String middleName;

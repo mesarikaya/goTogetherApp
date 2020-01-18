@@ -63,7 +63,6 @@ class UserInvitationsList extends React.Component<Props&PathProps,{}>{
         if(userId && groupId){
             
             await Promise.all([this.props.onUpdateInvitationList(event, currentGroup, groupId, userId, this.props.token, 'delete')]);
-            
             const currAppState = store.getState();
             await Promise.all([this.props.onGetUserAccountDetails(null, currAppState.system.userName,currAppState.system.token)]);
             await this.props.onGetUserAccountDetails(null, 
@@ -75,8 +74,10 @@ class UserInvitationsList extends React.Component<Props&PathProps,{}>{
     public handleOnClick = async (event: React.MouseEvent<HTMLDivElement, MouseEvent>, 
                                   group: GroupSearchResult): Promise<void> =>{
         event.preventDefault();
-        this.props.updateSelectedGroup(event, group, group.id, this.props.token);
-        this.props.history.push('/group');
+        await Promise.all([this.props.updateSelectedGroup(event, group, group.id, this.props.token)]);
+        window.setTimeout(() =>{
+            this.props.history.push('/group');
+        }, 3000);
     }
 
     public createTable(data: GroupSearchResult[]) {
@@ -86,9 +87,11 @@ class UserInvitationsList extends React.Component<Props&PathProps,{}>{
             if (data.hasOwnProperty(obj)) {
                 rows.push(
                     <tr key={data[obj].id}>
-                        <td align="center" 
-                        // tslint:disable-next-line: jsx-no-lambda
-                        onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => this.handleOnClick(e, data[obj])}>{data[obj].name}</td>
+                        <td className="text-center"
+                            // tslint:disable-next-line: jsx-no-lambda
+                            onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => this.handleOnClick(e, data[obj])}>
+                            {data[obj].name}
+                        </td>
                         <td className="text-center align-middle">
                             <ButtonToolbar className="buttonToolbar">
                                 <Button variant="info" size="sm" 
@@ -124,7 +127,7 @@ class UserInvitationsList extends React.Component<Props&PathProps,{}>{
                     </Card.Header>
                     <Card.Body>
                         <Table responsive={true}>
-                            <thead>
+                            <thead className="tableHeader">
                                 <tr>
                                     <th className="text-center">Name</th>
                                     <th className="text-center">Action</th>

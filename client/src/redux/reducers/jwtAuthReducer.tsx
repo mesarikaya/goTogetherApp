@@ -1,4 +1,4 @@
-import { JwtAuthActionTypes, SEND_LOGIN_REQUEST } from "../types/action/jwtAuthActionType";
+import { JwtAuthActionTypes, AUTH_REQUEST } from "../types/action/jwtAuthActionType";
 import { SecurityState } from '../types/system/securityState';
 
 
@@ -13,8 +13,7 @@ const initialState: SecurityState   = {
 export function loginReducer(state = initialState, action: JwtAuthActionTypes): SecurityState {
 
     switch (action.type) {
-
-        case SEND_LOGIN_REQUEST:
+        case AUTH_REQUEST:
             return Object.assign({}, state, {
                 cookie: action.payload.cookie,
                 loggedIn: action.payload.loggedIn,
